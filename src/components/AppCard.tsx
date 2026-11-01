@@ -1,0 +1,151 @@
+import React from 'react';
+import { HarkcoApp, MonitorTelemetry } from '../types';
+import { 
+  ArrowUpRight, 
+  Check, 
+  Activity, 
+  Receipt, 
+  FileText, 
+  SplitSquareVertical, 
+  Timer, 
+  Radio, 
+  Beer, 
+  Dumbbell, 
+  Fish, 
+  Truck, 
+  Layers, 
+  Archive 
+} from 'lucide-react';
+import { playLaunchClick } from '../utils/audio';
+
+const GithubIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+  </svg>
+);
+
+interface AppCardProps {
+  app: HarkcoApp;
+  telemetry?: MonitorTelemetry;
+}
+
+const ICON_MAP: Record<string, React.ElementType> = {
+  Receipt,
+  FileText,
+  SplitSquareVertical,
+  Timer,
+  Radio,
+  Beer,
+  Dumbbell,
+  Fish,
+  Truck,
+  Activity,
+  Layers,
+  Archive,
+};
+
+export const AppCard: React.FC<AppCardProps> = ({ app, telemetry }) => {
+  const IconComponent = ICON_MAP[app.iconName] || Activity;
+  const isUp = telemetry ? telemetry.status === 'up' : true;
+  const latency = telemetry?.latency || 24;
+
+  return (
+    <div 
+      className="group relative flex flex-col justify-between rounded-2xl bg-[#111726] border border-[#1E2840] hover:border-[#2E3D60] p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl"
+      style={{
+        borderTopColor: app.themeColor,
+        borderTopWidth: '2px',
+      }}
+    >
+      {/* Top Meta & Icon */}
+      <div>
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <div className="flex items-center gap-3">
+            <div 
+              className="w-11 h-11 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105"
+              style={{
+                backgroundColor: app.accentBg,
+                color: app.themeColor,
+                border: `1px solid ${app.themeColor}33`,
+              }}
+            >
+              <IconComponent className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-bold text-white font-serif tracking-tight">
+                  {app.name}
+                </h3>
+              </div>
+              <span className="text-[11px] font-mono text-zinc-400">
+                {app.categoryLabel}
+              </span>
+            </div>
+          </div>
+
+          {/* Latency & Status Pill */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0A0E17] border border-[#1E2840] text-[10px] font-mono">
+            <span className={`w-1.5 h-1.5 rounded-full ${isUp ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'}`} />
+            <span className={isUp ? 'text-zinc-300' : 'text-rose-400 font-bold'}>
+              {isUp ? `${latency} ms` : 'Offline'}
+            </span>
+          </div>
+        </div>
+
+        {/* Tagline */}
+        <h4 className="text-xs font-semibold text-zinc-200 mb-2 font-sans">
+          {app.tagline}
+        </h4>
+
+        {/* Description */}
+        <p className="text-xs text-zinc-400 leading-relaxed font-sans mb-5">
+          {app.description}
+        </p>
+
+        {/* Features list */}
+        <div className="grid grid-cols-2 gap-1.5 mb-6 text-[11px] font-mono text-zinc-300">
+          {app.features.map((feat, idx) => (
+            <div key={idx} className="flex items-center gap-1.5 truncate">
+              <Check className="w-3 h-3 text-emerald-400 shrink-0" />
+              <span className="truncate">{feat}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Footer & Launch Button */}
+      <div className="pt-4 border-t border-[#1E2840] flex items-center justify-between gap-3">
+        <div className="text-[11px] font-mono text-zinc-400 truncate">
+          <span className="text-amber-400 font-medium">{app.monetization}</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {app.githubUrl && (
+            <a
+              href={app.githubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => playLaunchClick()}
+              className="p-2 rounded-lg bg-[#0A0E17] hover:bg-[#182035] border border-[#1E2840] text-zinc-400 hover:text-white transition"
+              title="Visa källkod på GitHub"
+            >
+              <GithubIcon className="w-4 h-4" />
+            </a>
+          )}
+
+          <a
+            href={app.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => playLaunchClick()}
+            className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-[#0A0E17] font-semibold text-xs transition shadow-sm font-sans"
+          >
+            <span>Öppna</span>
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </a>
+        </div>
+      </div>
+
+    </div>
+  );
+};
