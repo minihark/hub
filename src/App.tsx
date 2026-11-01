@@ -7,6 +7,7 @@ import { CategoryFilter } from './components/CategoryFilter';
 import { AppCard } from './components/AppCard';
 import { ManifestoModal } from './components/ManifestoModal';
 import { ChangelogDrawer } from './components/ChangelogDrawer';
+import { WidgetEmbedModal } from './components/WidgetEmbedModal';
 import { Footer } from './components/Footer';
 import { setAudioMuted, playTabClick } from './utils/audio';
 import { Search } from 'lucide-react';
@@ -22,6 +23,7 @@ export const App: React.FC = () => {
   });
   const [isManifestoOpen, setIsManifestoOpen] = useState(false);
   const [isChangelogOpen, setIsChangelogOpen] = useState(false);
+  const [isWidgetOpen, setIsWidgetOpen] = useState(false);
   const [fleetData, setFleetData] = useState<FleetResponse | null>(null);
 
   // Sync theme with document class
@@ -189,6 +191,7 @@ export const App: React.FC = () => {
         onToggleTheme={handleToggleTheme}
         onOpenManifesto={() => setIsManifestoOpen(true)}
         onOpenChangelog={() => setIsChangelogOpen(true)}
+        onOpenWidget={() => setIsWidgetOpen(true)}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         fleetStatus={fleetData?.fleet_status || 'all_operational'}
@@ -277,8 +280,14 @@ export const App: React.FC = () => {
         onClose={() => setIsChangelogOpen(false)}
       />
 
+      {/* Widget & Embed Modal */}
+      <WidgetEmbedModal
+        isOpen={isWidgetOpen}
+        onClose={() => setIsWidgetOpen(false)}
+      />
+
       {/* Footer */}
-      <Footer />
+      <Footer onOpenWidget={() => setIsWidgetOpen(true)} />
 
     </div>
   );

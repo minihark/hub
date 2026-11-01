@@ -1,5 +1,5 @@
 import React from 'react';
-import { Volume2, VolumeX, BookOpen, Search, Radio, Rss, Sun, Moon } from 'lucide-react';
+import { Volume2, VolumeX, BookOpen, Search, Radio, Rss, Sun, Moon, Code2 } from 'lucide-react';
 import { playTabClick, playChime } from '../utils/audio';
 
 interface NavbarProps {
@@ -9,6 +9,7 @@ interface NavbarProps {
   onToggleTheme: () => void;
   onOpenManifesto: () => void;
   onOpenChangelog: () => void;
+  onOpenWidget: () => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
   fleetStatus: 'all_operational' | 'degraded';
@@ -23,6 +24,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onToggleTheme,
   onOpenManifesto,
   onOpenChangelog,
+  onOpenWidget,
   searchQuery,
   onSearchChange,
   fleetStatus,
@@ -114,6 +116,20 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <BookOpen className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
             <span className="hidden sm:inline">Vår Filosofi</span>
+          </button>
+
+          {/* Widget / Embed Button */}
+          <button
+            type="button"
+            onClick={() => {
+              playChime();
+              onOpenWidget();
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-[#111726] hover:bg-[#F3F0EA] dark:hover:bg-[#182035] border border-[#E5E0D8] dark:border-[#1E2840] hover:border-emerald-500/40 text-emerald-700 dark:text-emerald-400 transition font-medium"
+            title="Bädda in Harkco Widget på extern sajt"
+          >
+            <Code2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span className="hidden md:inline">Widget</span>
           </button>
 
           {/* Theme Toggle (Paper / Dark) */}

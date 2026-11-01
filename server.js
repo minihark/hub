@@ -6,6 +6,7 @@ import sirv from 'sirv';
 import sharp from 'sharp';
 import { generateRssXml, getChangelog } from './feed-generator.js';
 import { generateHubOgSvg, generateAppOgSvg, getAppMeta } from './og-generator.js';
+import { generateWidgetHtml } from './widget-generator.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -129,6 +130,41 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     if (req.method === 'HEAD') return res.end();
     res.end(JSON.stringify(cachedFleet));
+    return;
+  }
+
+  // GET or HEAD /widget.js (Embeddable Mini-Launcher Script)
+  if ((req.method === 'GET' || req.method === 'HEAD') && pathname === '/widget.js') {
+    const candidatePath = [
+      path.resolve(__dirname, 'public/widget.js'),
+      path.resolve(__dirname, 'dist/widget.js'),
+    ].find((p) => fs.existsSync(p));
+
+    if (candidatePath) {
+      const jsContent = fs.readFileSync(candidatePath, 'utf-8');
+      res.writeHead(200, {
+        'Content-Type': 'application/javascript; charset=utf-8',
+        'Cache-Control': 'public, max-age=300',
+        'Access-Control-Allow-Origin': '*',
+      });
+      if (req.method === 'HEAD') return res.end();
+      res.end(jsContent);
+      return;
+    }
+  }
+
+  // GET or HEAD /widget or /embed (Standalone Iframe Embed View)
+  if ((req.method === 'GET' || req.method === 'HEAD') && (pathname === '/widget' || pathname === '/embed')) {
+    const theme = parsedUrl.searchParams.get('theme') || 'dark';
+    const html = generateWidgetHtml(cachedFleet, { theme });
+    res.writeHead(200, {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'public, max-age=60',
+      'Access-Control-Allow-Origin': '*',
+      'X-Frame-Options': 'ALLOWALL',
+    });
+    if (req.method === 'HEAD') return res.end();
+    res.end(html);
     return;
   }
 
