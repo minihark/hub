@@ -28,6 +28,7 @@ const GithubIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' })
 interface AppCardProps {
   app: HarkcoApp;
   telemetry?: MonitorTelemetry;
+  shortcutNumber?: number;
 }
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -45,7 +46,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   Archive,
 };
 
-export const AppCard: React.FC<AppCardProps> = ({ app, telemetry }) => {
+export const AppCard: React.FC<AppCardProps> = ({ app, telemetry, shortcutNumber }) => {
   const [copied, setCopied] = useState(false);
   const IconComponent = ICON_MAP[app.iconName] || Activity;
   const isUp = telemetry ? telemetry.status === 'up' : true;
@@ -182,9 +183,15 @@ export const AppCard: React.FC<AppCardProps> = ({ app, telemetry }) => {
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => playLaunchClick()}
-            className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white dark:text-[#0A0E17] font-semibold text-xs transition shadow-sm font-sans"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white dark:text-[#0A0E17] font-semibold text-xs transition shadow-sm font-sans"
+            title={shortcutNumber ? `Öppna ${app.name} (Kortkommando: ${shortcutNumber})` : `Öppna ${app.name}`}
           >
             <span>Öppna</span>
+            {shortcutNumber && (
+              <kbd className="hidden sm:inline-flex items-center justify-center min-w-[15px] h-4 px-1 text-[9px] font-mono rounded bg-emerald-700/60 dark:bg-emerald-400/30 text-white dark:text-emerald-950 font-bold select-none border border-emerald-500/40 dark:border-emerald-600/30 shadow-2xs">
+                {shortcutNumber}
+              </kbd>
+            )}
             <ArrowUpRight className="w-3.5 h-3.5" />
           </a>
         </div>

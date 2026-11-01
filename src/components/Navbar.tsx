@@ -60,15 +60,21 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="relative">
             <Search className="w-4 h-4 text-[#9CA3AF] dark:text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
+              id="hub-search-input"
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Sök bland alla 12 appar (t.ex. skatt, kvitto, gym, fika)..."
-              className="w-full bg-white dark:bg-[#111726] border border-[#E5E0D8] dark:border-[#1E2840] rounded-lg pl-9 pr-12 py-1.5 text-xs text-[#111827] dark:text-white placeholder-[#9CA3AF] dark:placeholder-zinc-500 focus:outline-none focus:border-cyan-500 font-sans transition-colors"
+              className="w-full bg-white dark:bg-[#111726] border border-[#E5E0D8] dark:border-[#1E2840] rounded-lg pl-9 pr-16 py-1.5 text-xs text-[#111827] dark:text-white placeholder-[#9CA3AF] dark:placeholder-zinc-500 focus:outline-none focus:border-cyan-500 font-sans transition-colors"
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-[#6B7280] dark:text-zinc-500 bg-[#F3F0EA] dark:bg-[#0A0E17] px-1.5 py-0.5 rounded border border-[#E5E0D8] dark:border-[#1E2840]">
-              ⌘K
-            </span>
+            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none select-none">
+              <span className="text-[10px] font-mono text-[#6B7280] dark:text-zinc-400 bg-[#F3F0EA] dark:bg-[#0A0E17] px-1.5 py-0.5 rounded border border-[#E5E0D8] dark:border-[#1E2840]">
+                /
+              </span>
+              <span className="text-[10px] font-mono text-[#6B7280] dark:text-zinc-400 bg-[#F3F0EA] dark:bg-[#0A0E17] px-1.5 py-0.5 rounded border border-[#E5E0D8] dark:border-[#1E2840]">
+                ⌘K
+              </span>
+            </div>
           </div>
         </div>
 

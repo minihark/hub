@@ -9,7 +9,7 @@ import { ManifestoModal } from './components/ManifestoModal';
 import { ChangelogDrawer } from './components/ChangelogDrawer';
 import { WidgetEmbedModal } from './components/WidgetEmbedModal';
 import { Footer } from './components/Footer';
-import { setAudioMuted, playTabClick } from './utils/audio';
+import { setAudioMuted, playTabClick, playLaunchClick, playDismissClick } from './utils/audio';
 import { Search } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -60,19 +60,6 @@ export const App: React.FC = () => {
     loadFleet();
     const interval = setInterval(loadFleet, 25000);
     return () => clearInterval(interval);
-  }, []);
-
-  // Keyboard shortcut cmd+k / ctrl+k / "/"
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        const input = document.querySelector('input[type="text"]') as HTMLInputElement;
-        input?.focus();
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   // Deep-link auto-scroll and highlight (?app=:id or #app-:id)
@@ -177,6 +164,93 @@ export const App: React.FC = () => {
     return latencies.length % 2 !== 0 ? latencies[mid] : Math.round((latencies[mid - 1] + latencies[mid]) / 2);
   }, [fleetData]);
 
+  // Global hotkeys (Power user navigation)
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      const activeEl = document.activeElement;
+      const isInput =
+        activeEl instanceof HTMLInputElement ||
+        activeEl instanceof HTMLTextAreaElement ||
+        (activeEl instanceof HTMLElement && activeEl.isContentEditable);
+
+      // Dismiss modals or clear search on Escape
+      if (e.key === 'Escape') {
+        if (isManifestoOpen || isChangelogOpen || isWidgetOpen) {
+          e.preventDefault();
+          setIsManifestoOpen(false);
+          setIsChangelogOpen(false);
+          setIsWidgetOpen(false);
+          playDismissClick();
+          return;
+        }
+        if (searchQuery) {
+          e.preventDefault();
+          setSearchQuery('');
+          playDismissClick();
+          if (activeEl instanceof HTMLElement) activeEl.blur();
+          return;
+        }
+        if (isInput && activeEl instanceof HTMLElement) {
+          activeEl.blur();
+          return;
+        }
+      }
+
+      // Quick Search Focus (/ or Cmd+K / Ctrl+K)
+      if ((e.key === '/' && !isInput) || ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K'))) {
+        e.preventDefault();
+        const searchInput = document.getElementById('hub-search-input') as HTMLInputElement | null;
+        if (searchInput) {
+          searchInput.focus();
+          searchInput.select();
+        }
+        return;
+      }
+
+      // The following shortcuts only activate when not typing in an input and no drawer/modal is open
+      if (isInput || isManifestoOpen || isChangelogOpen || isWidgetOpen) {
+        return;
+      }
+
+      // 1-9 to launch apps from current filtered list
+      if (/^[1-9]$/.test(e.key)) {
+        const index = parseInt(e.key, 10) - 1;
+        const targetApp = filteredApps[index];
+        if (targetApp) {
+          e.preventDefault();
+          playLaunchClick();
+          window.open(targetApp.url, '_blank', 'noopener,noreferrer');
+        }
+        return;
+      }
+
+      // 't' or 'T' to toggle theme
+      if (e.key === 't' || e.key === 'T') {
+        e.preventDefault();
+        handleToggleTheme();
+        return;
+      }
+
+      // 'm' or 'M' to toggle mute
+      if (e.key === 'm' || e.key === 'M') {
+        e.preventDefault();
+        handleToggleMute();
+        return;
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [
+    filteredApps,
+    isManifestoOpen,
+    isChangelogOpen,
+    isWidgetOpen,
+    searchQuery,
+    isMuted,
+    theme,
+  ]);
+
   return (
     <div className="min-h-screen flex flex-col bg-[#F8F7F4] dark:bg-[#0A0E17] text-[#111827] dark:text-[#F1F5F9] font-sans selection:bg-[#10B981] selection:text-black transition-colors duration-200">
       
@@ -233,11 +307,12 @@ export const App: React.FC = () => {
         {/* Grid of Apps */}
         {filteredApps.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredApps.map((app) => (
+            {filteredApps.map((app, index) => (
               <AppCard
                 key={app.id}
                 app={app}
                 telemetry={telemetryMap[app.id]}
+                shortcutNumber={index < 9 ? index + 1 : undefined}
               />
             ))}
           </div>
@@ -285,6 +360,48 @@ export const App: React.FC = () => {
         isOpen={isWidgetOpen}
         onClose={() => setIsWidgetOpen(false)}
       />
+
+      {/* Desktop Quick Shortcuts Bar */}
+      <aside
+        aria-label="Kortkommandon"
+        className="hidden md:flex items-center justify-between border-t border-[#E5E0D8]/80 dark:border-[#1E2840]/80 px-6 py-2.5 max-w-7xl w-full mx-auto text-[11px] font-mono text-[#6B7280] dark:text-zinc-400 select-none"
+      >
+        <div className="flex items-center gap-3">
+          <span className="font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider text-[10px]">
+            Kortkommandon
+          </span>
+          <span className="flex items-center gap-1">
+            <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-[#111726] border border-[#DDD7CD] dark:border-[#263550] text-[#111827] dark:text-zinc-200 font-semibold text-[10px] shadow-2xs">1</kbd>
+            <span>–</span>
+            <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-[#111726] border border-[#DDD7CD] dark:border-[#263550] text-[#111827] dark:text-zinc-200 font-semibold text-[10px] shadow-2xs">9</kbd>
+            <span className="ml-0.5">Starta app</span>
+          </span>
+          <span className="text-[#D1D5DB] dark:text-zinc-700">•</span>
+          <span className="flex items-center gap-1">
+            <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-[#111726] border border-[#DDD7CD] dark:border-[#263550] text-[#111827] dark:text-zinc-200 font-semibold text-[10px] shadow-2xs">/</kbd>
+            <span className="ml-0.5">Fokusera sök</span>
+          </span>
+          <span className="text-[#D1D5DB] dark:text-zinc-700">•</span>
+          <span className="flex items-center gap-1">
+            <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-[#111726] border border-[#DDD7CD] dark:border-[#263550] text-[#111827] dark:text-zinc-200 font-semibold text-[10px] shadow-2xs">T</kbd>
+            <span className="ml-0.5">Växla tema</span>
+          </span>
+          <span className="text-[#D1D5DB] dark:text-zinc-700">•</span>
+          <span className="flex items-center gap-1">
+            <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-[#111726] border border-[#DDD7CD] dark:border-[#263550] text-[#111827] dark:text-zinc-200 font-semibold text-[10px] shadow-2xs">M</kbd>
+            <span className="ml-0.5">Ljud</span>
+          </span>
+          <span className="text-[#D1D5DB] dark:text-zinc-700">•</span>
+          <span className="flex items-center gap-1">
+            <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-[#111726] border border-[#DDD7CD] dark:border-[#263550] text-[#111827] dark:text-zinc-200 font-semibold text-[10px] shadow-2xs">Esc</kbd>
+            <span className="ml-0.5">Stäng / Rensa</span>
+          </span>
+        </div>
+        <div className="flex items-center gap-2 text-[10px] text-zinc-500 dark:text-zinc-500">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span>Harkco Studio Fleet • 12 aktiva verktyg</span>
+        </div>
+      </aside>
 
       {/* Footer */}
       <Footer onOpenWidget={() => setIsWidgetOpen(true)} />
