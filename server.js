@@ -1,7 +1,13 @@
 import http from 'node:http';
+import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import sirv from 'sirv';
 import { generateRssXml, getChangelog } from './feed-generator.js';
+import { generateHubOgSvg, generateAppOgSvg, getAppMeta } from './og-generator.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const PORT = Number(process.env.PORT) || 80;
 const VAKT_API_URL = process.env.VAKT_API_URL || 'https://vakt.apps.harkco.se/api/monitors';
@@ -65,7 +71,7 @@ setInterval(syncWithVakt, 30000);
 setTimeout(syncWithVakt, 1500);
 
 // Static assets handler
-const assets = sirv(path.resolve('dist'), {
+const assets = sirv(path.resolve(__dirname, 'dist'), {
   single: true,
   dev: true,
   gzip: true,
@@ -137,6 +143,67 @@ const server = http.createServer(async (req, res) => {
       entries: changelog,
     }));
     return;
+  }
+
+  // GET or HEAD /og-image.svg (Fleet OpenGraph SVG)
+  if ((req.method === 'GET' || req.method === 'HEAD') && pathname === '/og-image.svg') {
+    const svg = generateHubOgSvg(cachedFleet);
+    res.writeHead(200, {
+      'Content-Type': 'image/svg+xml; charset=utf-8',
+      'Cache-Control': 'public, max-age=600',
+    });
+    if (req.method === 'HEAD') return res.end();
+    res.end(svg);
+    return;
+  }
+
+  // GET or HEAD /api/og (Dynamic OpenGraph SVG with app query param)
+  if ((req.method === 'GET' || req.method === 'HEAD') && pathname === '/api/og') {
+    const appId = parsedUrl.searchParams.get('app');
+    const appData = appId ? cachedFleet.monitors.find((m) => m.id === appId) : null;
+    const svg = appId ? generateAppOgSvg(appId, appData) : generateHubOgSvg(cachedFleet);
+    res.writeHead(200, {
+      'Content-Type': 'image/svg+xml; charset=utf-8',
+      'Cache-Control': 'public, max-age=600',
+    });
+    if (req.method === 'HEAD') return res.end();
+    res.end(svg);
+    return;
+  }
+
+  // Dynamic Index Serving with App Meta Injection for crawler previews / direct links
+  if ((req.method === 'GET' || req.method === 'HEAD') && (pathname === '/' || pathname === '/index.html')) {
+    const appId = parsedUrl.searchParams.get('app');
+    const indexPath = path.resolve(__dirname, 'dist/index.html');
+    if (fs.existsSync(indexPath)) {
+      let html = fs.readFileSync(indexPath, 'utf-8');
+      if (appId) {
+        const meta = getAppMeta(appId);
+        if (meta) {
+          const title = `${meta.name} — Harkco Hub`;
+          const desc = `${meta.description} Utvecklad med stolthet av Harkco.`;
+          const ogUrl = `https://hub.apps.harkco.se/?app=${meta.id}#app-${meta.id}`;
+          const ogImg = `https://hub.apps.harkco.se/api/og?app=${meta.id}`;
+
+          html = html
+            .replace(/<title>.*?<\/title>/, `<title>${title}</title>`)
+            .replace(/<meta property="og:title" content=".*?" \/>/, `<meta property="og:title" content="${title}" />`)
+            .replace(/<meta property="og:description" content=".*?" \/>/, `<meta property="og:description" content="${desc}" />`)
+            .replace(/<meta property="og:url" content=".*?" \/>/, `<meta property="og:url" content="${ogUrl}" />`)
+            .replace(/<meta property="og:image" content=".*?" \/>/, `<meta property="og:image" content="${ogImg}" />`)
+            .replace(/<meta name="twitter:title" content=".*?" \/>/, `<meta name="twitter:title" content="${title}" />`)
+            .replace(/<meta name="twitter:description" content=".*?" \/>/, `<meta name="twitter:description" content="${desc}" />`)
+            .replace(/<meta name="twitter:image" content=".*?" \/>/, `<meta name="twitter:image" content="${ogImg}" />`);
+        }
+      }
+      res.writeHead(200, {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': appId ? 'no-cache' : 'public, max-age=60',
+      });
+      if (req.method === 'HEAD') return res.end();
+      res.end(html);
+      return;
+    }
   }
 
   // Fallback to static client assets

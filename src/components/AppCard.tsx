@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { HarkcoApp, MonitorTelemetry } from '../types';
 import { 
   ArrowUpRight, 
@@ -14,9 +14,10 @@ import {
   Fish, 
   Truck, 
   Layers, 
-  Archive 
+  Archive,
+  Share2
 } from 'lucide-react';
-import { playLaunchClick } from '../utils/audio';
+import { playLaunchClick, playChime } from '../utils/audio';
 
 const GithubIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -45,12 +46,34 @@ const ICON_MAP: Record<string, React.ElementType> = {
 };
 
 export const AppCard: React.FC<AppCardProps> = ({ app, telemetry }) => {
+  const [copied, setCopied] = useState(false);
   const IconComponent = ICON_MAP[app.iconName] || Activity;
   const isUp = telemetry ? telemetry.status === 'up' : true;
   const latency = telemetry?.latency || 24;
 
+  const handleShare = async () => {
+    playChime();
+    const deepLinkUrl = `${window.location.origin}/?app=${app.id}#app-${app.id}`;
+    if (typeof navigator !== 'undefined' && navigator.share && /mobile|android|iphone|ipad/i.test(navigator.userAgent)) {
+      try {
+        await navigator.share({
+          title: `${app.name} — Harkco Daily Apps`,
+          text: `${app.tagline}: ${app.description}`,
+          url: deepLinkUrl,
+        });
+        return;
+      } catch {}
+    }
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      await navigator.clipboard.writeText(deepLinkUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2200);
+    }
+  };
+
   return (
     <div 
+      id={`app-${app.id}`}
       className="group relative flex flex-col justify-between rounded-2xl bg-white dark:bg-[#111726] border border-[#E5E0D8] dark:border-[#1E2840] hover:border-[#CBD5E1] dark:hover:border-[#2E3D60] p-6 transition-all duration-200 hover:-translate-y-1 shadow-sm hover:shadow-xl dark:shadow-none"
       style={{
         borderTopColor: app.themeColor,
@@ -120,6 +143,27 @@ export const AppCard: React.FC<AppCardProps> = ({ app, telemetry }) => {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* 1-Click Share Button */}
+          <button
+            type="button"
+            onClick={handleShare}
+            className={`p-2 rounded-lg border transition text-xs font-mono flex items-center gap-1 ${
+              copied
+                ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 font-bold'
+                : 'bg-[#F8F7F4] dark:bg-[#0A0E17] hover:bg-[#EFECE6] dark:hover:bg-[#182035] border-[#E5E0D8] dark:border-[#1E2840] text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white'
+            }`}
+            title="Dela eller kopiera direktlänk till appen"
+          >
+            {copied ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span className="hidden sm:inline text-[10px]">Kopierad!</span>
+              </>
+            ) : (
+              <Share2 className="w-3.5 h-3.5" />
+            )}
+          </button>
+
           {app.githubUrl && (
             <a
               href={app.githubUrl}

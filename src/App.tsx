@@ -73,6 +73,31 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Deep-link auto-scroll and highlight (?app=:id or #app-:id)
+  useEffect(() => {
+    function handleDeepLink() {
+      const hash = window.location.hash.replace(/^#app-/, '').replace(/^#/, '');
+      const queryApp = new URLSearchParams(window.location.search).get('app');
+      const targetId = queryApp || hash;
+      if (targetId) {
+        setTimeout(() => {
+          const el = document.getElementById(`app-${targetId}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.classList.add('ring-2', 'ring-emerald-500', 'ring-offset-2', 'dark:ring-offset-[#0A0E17]');
+            setTimeout(() => {
+              el.classList.remove('ring-2', 'ring-emerald-500', 'ring-offset-2', 'dark:ring-offset-[#0A0E17]');
+            }, 3000);
+          }
+        }, 300);
+      }
+    }
+
+    handleDeepLink();
+    window.addEventListener('hashchange', handleDeepLink);
+    return () => window.removeEventListener('hashchange', handleDeepLink);
+  }, []);
+
   const handleToggleMute = () => {
     const next = !isMuted;
     setIsMuted(next);
