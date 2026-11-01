@@ -1,5 +1,23 @@
 [
   {
+    "id": "hub-nordic-bond-paper-atelier",
+    "date": "2026-11-01",
+    "title": "Harkco Hub: Varmt Nordiskt Bond Paper-läge & Högkontrastväxlare",
+    "appId": "hub",
+    "appName": "Harkco Hub",
+    "appUrl": "https://hub.apps.harkco.se",
+    "category": "feature",
+    "version": "v1.1.0",
+    "summary": "Fullständigt stöd för ljust och taktilt nordiskt bond paper-tema (#F8F7F4) med kolsvart trycksvärta (#111827) och skogsgrön accenter, inspirerat av SkatteKoll och Bryggkompis.",
+    "highlights": [
+      "1-klicks temaväxlare i navbaren (Mörkt rymdtema vs Nordiskt bondpapper)",
+      "Sparar användarvalet lokalt i localStorage med omedelbar tillämpning",
+      "Fullständig anpassning av alla komponenter: hjältekort, kategorifilter, appkort, footer och slide-overs",
+      "Skräddarsydda pergamentscrollbars och subtila pappersskuggor"
+    ],
+    "author": "Minihark & Viktor"
+  },
+  {
     "id": "vakt-self-healing-action-hooks",
     "date": "2026-11-01",
     "title": "Vakt: Automatisk Självläkning med Action Hooks & Telegram-Larm",

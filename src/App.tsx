@@ -17,9 +17,30 @@ export const App: React.FC = () => {
   const [isMuted, setIsMuted] = useState<boolean>(() => {
     return localStorage.getItem('harkco_hub_muted') === 'true';
   });
+  const [theme, setTheme] = useState<'dark' | 'paper'>(() => {
+    return (localStorage.getItem('harkco_hub_theme') as 'dark' | 'paper') || 'dark';
+  });
   const [isManifestoOpen, setIsManifestoOpen] = useState(false);
   const [isChangelogOpen, setIsChangelogOpen] = useState(false);
   const [fleetData, setFleetData] = useState<FleetResponse | null>(null);
+
+  // Sync theme with document class
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+      root.classList.remove('paper');
+    } else {
+      root.classList.remove('dark');
+      root.classList.add('paper');
+    }
+    localStorage.setItem('harkco_hub_theme', theme);
+  }, [theme]);
+
+  const handleToggleTheme = () => {
+    playTabClick();
+    setTheme((prev) => (prev === 'dark' ? 'paper' : 'dark'));
+  };
 
   // Sync with live fleet
   useEffect(() => {
@@ -118,7 +139,7 @@ export const App: React.FC = () => {
   }, [fleetData]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0A0E17] text-[#F1F5F9] font-sans selection:bg-[#10B981] selection:text-black">
+    <div className="min-h-screen flex flex-col bg-[#F8F7F4] dark:bg-[#0A0E17] text-[#111827] dark:text-[#F1F5F9] font-sans selection:bg-[#10B981] selection:text-black transition-colors duration-200">
       
       {/* 2px Emerald Accent Top Bar */}
       <div className="h-0.5 w-full bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-500" />
@@ -127,6 +148,8 @@ export const App: React.FC = () => {
       <Navbar
         isMuted={isMuted}
         onToggleMute={handleToggleMute}
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
         onOpenManifesto={() => setIsManifestoOpen(true)}
         onOpenChangelog={() => setIsChangelogOpen(true)}
         searchQuery={searchQuery}
@@ -155,7 +178,7 @@ export const App: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Sök bland alla 12 appar..."
-              className="w-full bg-[#111726] border border-[#1E2840] rounded-lg pl-9 pr-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500 font-sans transition-colors"
+              className="w-full bg-white dark:bg-[#111726] border border-[#E5E0D8] dark:border-[#1E2840] rounded-lg pl-9 pr-4 py-2.5 text-xs text-[#111827] dark:text-white placeholder-[#9CA3AF] dark:placeholder-zinc-500 focus:outline-none focus:border-cyan-500 font-sans transition-colors"
             />
           </div>
         </div>
@@ -180,12 +203,12 @@ export const App: React.FC = () => {
           </div>
         ) : (
           <div className="py-16 text-center space-y-4 max-w-md mx-auto">
-            <div className="w-12 h-12 rounded-xl bg-[#111726] border border-[#1E2840] flex items-center justify-center text-zinc-500 mx-auto">
+            <div className="w-12 h-12 rounded-xl bg-white dark:bg-[#111726] border border-[#E5E0D8] dark:border-[#1E2840] flex items-center justify-center text-zinc-400 dark:text-zinc-500 mx-auto">
               <Search className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white font-serif">Inga appar matchade</h3>
-              <p className="text-xs text-zinc-400 font-mono mt-1">
+              <h3 className="text-base font-bold text-[#111827] dark:text-white font-serif">Inga appar matchade</h3>
+              <p className="text-xs text-[#4B5563] dark:text-zinc-400 font-mono mt-1">
                 Inga resultat för "{searchQuery}". Prova ett annat sökord eller nollställ filtret.
               </p>
             </div>
@@ -196,7 +219,7 @@ export const App: React.FC = () => {
                 setSearchQuery('');
                 setSelectedCategory('all');
               }}
-              className="px-4 py-2 rounded-lg bg-[#182035] hover:bg-[#202B48] border border-[#2E3D60] text-xs font-mono text-zinc-200 transition"
+              className="px-4 py-2 rounded-lg bg-[#F3F0EA] dark:bg-[#182035] hover:bg-[#E5E0D8] dark:hover:bg-[#202B48] border border-[#E5E0D8] dark:border-[#2E3D60] text-xs font-mono text-[#111827] dark:text-zinc-200 transition"
             >
               Återställ sökning
             </button>

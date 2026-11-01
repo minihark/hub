@@ -1,10 +1,12 @@
 import React from 'react';
-import { Volume2, VolumeX, BookOpen, Search, Radio, Rss } from 'lucide-react';
+import { Volume2, VolumeX, BookOpen, Search, Radio, Rss, Sun, Moon } from 'lucide-react';
 import { playTabClick, playChime } from '../utils/audio';
 
 interface NavbarProps {
   isMuted: boolean;
   onToggleMute: () => void;
+  theme: 'dark' | 'paper';
+  onToggleTheme: () => void;
   onOpenManifesto: () => void;
   onOpenChangelog: () => void;
   searchQuery: string;
@@ -17,6 +19,8 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({
   isMuted,
   onToggleMute,
+  theme,
+  onToggleTheme,
   onOpenManifesto,
   onOpenChangelog,
   searchQuery,
@@ -26,24 +30,24 @@ export const Navbar: React.FC<NavbarProps> = ({
   totalCount,
 }) => {
   return (
-    <header className="sticky top-0 z-40 bg-[#0A0E17]/90 backdrop-blur-md border-b border-[#1E2840] px-4 sm:px-6 py-3.5">
+    <header className="sticky top-0 z-40 bg-[#F8F7F4]/90 dark:bg-[#0A0E17]/90 backdrop-blur-md border-b border-[#E5E0D8] dark:border-[#1E2840] px-4 sm:px-6 py-3.5 transition-colors duration-200">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
         
         {/* Brand */}
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-[#111726] border border-[#1E2840] flex items-center justify-center text-emerald-400 font-mono font-bold text-base shadow-sm">
+          <div className="w-9 h-9 rounded-lg bg-white dark:bg-[#111726] border border-[#E5E0D8] dark:border-[#1E2840] flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-mono font-bold text-base shadow-xs">
             H
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-serif text-lg font-bold tracking-tight text-white">
+              <span className="font-serif text-lg font-bold tracking-tight text-[#111827] dark:text-white">
                 Harkco Hub
               </span>
-              <span className="font-mono text-[10px] tracking-wider uppercase px-2 py-0.5 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-500/30 font-bold">
+              <span className="font-mono text-[10px] tracking-wider uppercase px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30 font-bold">
                 Software Lab
               </span>
             </div>
-            <p className="text-[11px] text-zinc-400 font-mono hidden sm:block">
+            <p className="text-[11px] text-[#6B7280] dark:text-zinc-400 font-mono hidden sm:block">
               Gothenburg • Natt- & Helgstudio • 100% Noll Annonser
             </p>
           </div>
@@ -52,15 +56,15 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Center Search Input */}
         <div className="flex-1 max-w-md relative hidden md:block">
           <div className="relative">
-            <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Search className="w-4 h-4 text-[#9CA3AF] dark:text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Sök bland alla 12 appar (t.ex. skatt, kvitto, gym, fika)..."
-              className="w-full bg-[#111726] border border-[#1E2840] rounded-lg pl-9 pr-12 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500 font-sans transition-colors"
+              className="w-full bg-white dark:bg-[#111726] border border-[#E5E0D8] dark:border-[#1E2840] rounded-lg pl-9 pr-12 py-1.5 text-xs text-[#111827] dark:text-white placeholder-[#9CA3AF] dark:placeholder-zinc-500 focus:outline-none focus:border-cyan-500 font-sans transition-colors"
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-zinc-500 bg-[#0A0E17] px-1.5 py-0.5 rounded border border-[#1E2840]">
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-[#6B7280] dark:text-zinc-500 bg-[#F3F0EA] dark:bg-[#0A0E17] px-1.5 py-0.5 rounded border border-[#E5E0D8] dark:border-[#1E2840]">
               ⌘K
             </span>
           </div>
@@ -75,14 +79,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => playTabClick()}
-            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#111726] hover:bg-[#182035] border border-[#1E2840] hover:border-emerald-500/40 text-zinc-300 transition"
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-[#111726] hover:bg-[#F3F0EA] dark:hover:bg-[#182035] border border-[#E5E0D8] dark:border-[#1E2840] hover:border-emerald-500/40 text-[#374151] dark:text-zinc-300 transition"
             title="Öppna Vakt Fleet Sentinel"
           >
-            <Radio className={`w-3.5 h-3.5 ${fleetStatus === 'all_operational' ? 'text-emerald-400' : 'text-rose-400'} animate-pulse`} />
+            <Radio className={`w-3.5 h-3.5 ${fleetStatus === 'all_operational' ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500'} animate-pulse`} />
             <span className="font-semibold text-[11px]">
               {operationalCount}/{totalCount}
             </span>
-            <span className="text-[10px] text-emerald-400 font-bold hidden lg:inline">OPERATIV</span>
+            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold hidden lg:inline">OPERATIV</span>
           </a>
 
           {/* Changelog / Loggbok Button */}
@@ -92,10 +96,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               playChime();
               onOpenChangelog();
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#111726] hover:bg-[#182035] border border-[#1E2840] hover:border-amber-500/40 text-amber-300 transition font-medium"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-[#111726] hover:bg-[#F3F0EA] dark:hover:bg-[#182035] border border-[#E5E0D8] dark:border-[#1E2840] hover:border-amber-500/40 text-amber-700 dark:text-amber-300 transition font-medium"
             title="Öppna Ateljé-Loggbok & RSS-flöde"
           >
-            <Rss className="w-3.5 h-3.5 text-amber-400" />
+            <Rss className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
             <span className="hidden sm:inline">Loggbok</span>
           </button>
 
@@ -106,10 +110,24 @@ export const Navbar: React.FC<NavbarProps> = ({
               playChime();
               onOpenManifesto();
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#111726] hover:bg-[#182035] border border-[#1E2840] hover:border-[#2E3D60] text-zinc-200 transition font-medium"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-[#111726] hover:bg-[#F3F0EA] dark:hover:bg-[#182035] border border-[#E5E0D8] dark:border-[#1E2840] hover:border-[#CBD5E1] dark:hover:border-[#2E3D60] text-[#374151] dark:text-zinc-200 transition font-medium"
           >
-            <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+            <BookOpen className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
             <span className="hidden sm:inline">Vår Filosofi</span>
+          </button>
+
+          {/* Theme Toggle (Paper / Dark) */}
+          <button
+            type="button"
+            onClick={onToggleTheme}
+            className="p-1.5 rounded-lg border bg-white dark:bg-[#111726] border-[#E5E0D8] dark:border-[#1E2840] text-[#374151] dark:text-zinc-300 hover:text-[#111827] dark:hover:text-white transition"
+            title={theme === 'dark' ? 'Växla till Nordiskt Arkivpapper (Ljust läge)' : 'Växla till Mörkt läge'}
+          >
+            {theme === 'dark' ? (
+              <Sun className="w-4 h-4 text-amber-400" />
+            ) : (
+              <Moon className="w-4 h-4 text-cyan-600" />
+            )}
           </button>
 
           {/* Sound Toggle */}
@@ -118,8 +136,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={onToggleMute}
             className={`p-1.5 rounded-lg border transition ${
               isMuted
-                ? 'bg-[#111726] border-[#1E2840] text-zinc-500'
-                : 'bg-[#111726] border-emerald-500/40 text-emerald-400'
+                ? 'bg-white dark:bg-[#111726] border-[#E5E0D8] dark:border-[#1E2840] text-[#9CA3AF] dark:text-zinc-500'
+                : 'bg-white dark:bg-[#111726] border-emerald-500/40 text-emerald-600 dark:text-emerald-400'
             }`}
             title={isMuted ? 'Slå på ljud' : 'Stäng av ljud'}
           >

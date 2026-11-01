@@ -10,16 +10,16 @@ const GithubIcon: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.5
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="border-t border-[#1E2840] bg-[#0A0E17] py-10 px-4 sm:px-6 text-xs text-zinc-500 font-mono mt-16">
+    <footer className="border-t border-[#E5E0D8] dark:border-[#1E2840] bg-[#F0ECE4] dark:bg-[#0A0E17] py-10 px-4 sm:px-6 text-xs text-zinc-600 dark:text-zinc-500 font-mono mt-16 transition-colors">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
         
         {/* Brand & Mission */}
         <div className="flex flex-col sm:flex-row items-center gap-3 text-center sm:text-left">
-          <div className="w-7 h-7 rounded-lg bg-[#111726] border border-[#1E2840] flex items-center justify-center text-emerald-400 font-bold">
+          <div className="w-7 h-7 rounded-lg bg-white dark:bg-[#111726] border border-[#E5E0D8] dark:border-[#1E2840] flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold">
             H
           </div>
           <div>
-            <div className="text-zinc-300 font-bold">Harkco Software Lab</div>
+            <div className="text-[#111827] dark:text-zinc-300 font-bold">Harkco Software Lab</div>
             <div className="text-[11px] text-zinc-500">
               Göteborg, Sverige • Natt- och helgstudio för taktila mjukvaruinstrument
             </div>
@@ -27,15 +27,15 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Links */}
-        <div className="flex flex-wrap items-center justify-center gap-5 text-zinc-400">
+        <div className="flex flex-wrap items-center justify-center gap-5 text-zinc-600 dark:text-zinc-400">
           <a
             href="https://vakt.apps.harkco.se"
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => playTabClick()}
-            className="hover:text-emerald-400 transition flex items-center gap-1"
+            className="hover:text-emerald-600 dark:hover:text-emerald-400 transition flex items-center gap-1"
           >
-            <Radio className="w-3.5 h-3.5 text-emerald-400" />
+            <Radio className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             <span>Vakt Sentinel</span>
           </a>
 
@@ -44,10 +44,10 @@ export const Footer: React.FC = () => {
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => playTabClick()}
-            className="hover:text-amber-400 transition flex items-center gap-1 text-amber-300"
+            className="hover:text-amber-800 dark:hover:text-amber-400 transition flex items-center gap-1 text-amber-700 dark:text-amber-300 font-medium"
             title="Prenumerera på studio-loggboken via RSS"
           >
-            <Rss className="w-3.5 h-3.5 text-amber-400" />
+            <Rss className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
             <span>RSS-flöde</span>
           </a>
 
@@ -56,7 +56,7 @@ export const Footer: React.FC = () => {
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => playTabClick()}
-            className="hover:text-white transition flex items-center gap-1"
+            className="hover:text-[#111827] dark:hover:text-white transition flex items-center gap-1"
           >
             <GithubIcon className="w-3.5 h-3.5" />
             <span>GitHub</span>
@@ -67,10 +67,10 @@ export const Footer: React.FC = () => {
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => playTabClick()}
-            className="hover:text-white transition flex items-center gap-1"
+            className="hover:text-[#111827] dark:hover:text-white transition flex items-center gap-1"
           >
             <span>Qvitt.se</span>
-            <ExternalLink className="w-3 h-3 text-zinc-600" />
+            <ExternalLink className="w-3 h-3 text-zinc-400 dark:text-zinc-600" />
           </a>
         </div>
 

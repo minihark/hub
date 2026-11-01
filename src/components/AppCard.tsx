@@ -51,7 +51,7 @@ export const AppCard: React.FC<AppCardProps> = ({ app, telemetry }) => {
 
   return (
     <div 
-      className="group relative flex flex-col justify-between rounded-2xl bg-[#111726] border border-[#1E2840] hover:border-[#2E3D60] p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl"
+      className="group relative flex flex-col justify-between rounded-2xl bg-white dark:bg-[#111726] border border-[#E5E0D8] dark:border-[#1E2840] hover:border-[#CBD5E1] dark:hover:border-[#2E3D60] p-6 transition-all duration-200 hover:-translate-y-1 shadow-sm hover:shadow-xl dark:shadow-none"
       style={{
         borderTopColor: app.themeColor,
         borderTopWidth: '2px',
@@ -73,40 +73,40 @@ export const AppCard: React.FC<AppCardProps> = ({ app, telemetry }) => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-bold text-white font-serif tracking-tight">
+                <h3 className="text-lg font-bold text-[#111827] dark:text-white font-serif tracking-tight">
                   {app.name}
                 </h3>
               </div>
-              <span className="text-[11px] font-mono text-zinc-400">
+              <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400">
                 {app.categoryLabel}
               </span>
             </div>
           </div>
 
           {/* Latency & Status Pill */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0A0E17] border border-[#1E2840] text-[10px] font-mono">
-            <span className={`w-1.5 h-1.5 rounded-full ${isUp ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'}`} />
-            <span className={isUp ? 'text-zinc-300' : 'text-rose-400 font-bold'}>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#F8F7F4] dark:bg-[#0A0E17] border border-[#E5E0D8] dark:border-[#1E2840] text-[10px] font-mono">
+            <span className={`w-1.5 h-1.5 rounded-full ${isUp ? 'bg-emerald-500 dark:bg-emerald-400 animate-pulse' : 'bg-rose-500'}`} />
+            <span className={isUp ? 'text-zinc-700 dark:text-zinc-300' : 'text-rose-600 dark:text-rose-400 font-bold'}>
               {isUp ? `${latency} ms` : 'Offline'}
             </span>
           </div>
         </div>
 
         {/* Tagline */}
-        <h4 className="text-xs font-semibold text-zinc-200 mb-2 font-sans">
+        <h4 className="text-xs font-semibold text-[#1F2937] dark:text-zinc-200 mb-2 font-sans">
           {app.tagline}
         </h4>
 
         {/* Description */}
-        <p className="text-xs text-zinc-400 leading-relaxed font-sans mb-5">
+        <p className="text-xs text-[#4B5563] dark:text-zinc-400 leading-relaxed font-sans mb-5">
           {app.description}
         </p>
 
         {/* Features list */}
-        <div className="grid grid-cols-2 gap-1.5 mb-6 text-[11px] font-mono text-zinc-300">
+        <div className="grid grid-cols-2 gap-1.5 mb-6 text-[11px] font-mono text-zinc-700 dark:text-zinc-300">
           {app.features.map((feat, idx) => (
             <div key={idx} className="flex items-center gap-1.5 truncate">
-              <Check className="w-3 h-3 text-emerald-400 shrink-0" />
+              <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span className="truncate">{feat}</span>
             </div>
           ))}
@@ -114,9 +114,9 @@ export const AppCard: React.FC<AppCardProps> = ({ app, telemetry }) => {
       </div>
 
       {/* Footer & Launch Button */}
-      <div className="pt-4 border-t border-[#1E2840] flex items-center justify-between gap-3">
-        <div className="text-[11px] font-mono text-zinc-400 truncate">
-          <span className="text-amber-400 font-medium">{app.monetization}</span>
+      <div className="pt-4 border-t border-[#E5E0D8] dark:border-[#1E2840] flex items-center justify-between gap-3">
+        <div className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 truncate">
+          <span className="text-amber-700 dark:text-amber-400 font-medium">{app.monetization}</span>
         </div>
 
         <div className="flex items-center gap-2">
@@ -126,7 +126,7 @@ export const AppCard: React.FC<AppCardProps> = ({ app, telemetry }) => {
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => playLaunchClick()}
-              className="p-2 rounded-lg bg-[#0A0E17] hover:bg-[#182035] border border-[#1E2840] text-zinc-400 hover:text-white transition"
+              className="p-2 rounded-lg bg-[#F8F7F4] dark:bg-[#0A0E17] hover:bg-[#EFECE6] dark:hover:bg-[#182035] border border-[#E5E0D8] dark:border-[#1E2840] text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition"
               title="Visa källkod på GitHub"
             >
               <GithubIcon className="w-4 h-4" />
@@ -138,7 +138,7 @@ export const AppCard: React.FC<AppCardProps> = ({ app, telemetry }) => {
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => playLaunchClick()}
-            className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-[#0A0E17] font-semibold text-xs transition shadow-sm font-sans"
+            className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white dark:text-[#0A0E17] font-semibold text-xs transition shadow-sm font-sans"
           >
             <span>Öppna</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
