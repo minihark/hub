@@ -1,5 +1,5 @@
 import React from 'react';
-import { Radio, ExternalLink } from 'lucide-react';
+import { Radio, ExternalLink, Rss } from 'lucide-react';
 import { playTabClick } from '../utils/audio';
 
 const GithubIcon: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.5' }) => (
@@ -37,6 +37,18 @@ export const Footer: React.FC = () => {
           >
             <Radio className="w-3.5 h-3.5 text-emerald-400" />
             <span>Vakt Sentinel</span>
+          </a>
+
+          <a
+            href="/feed.xml"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => playTabClick()}
+            className="hover:text-amber-400 transition flex items-center gap-1 text-amber-300"
+            title="Prenumerera på studio-loggboken via RSS"
+          >
+            <Rss className="w-3.5 h-3.5 text-amber-400" />
+            <span>RSS-flöde</span>
           </a>
 
           <a

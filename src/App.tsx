@@ -6,6 +6,7 @@ import { Hero } from './components/Hero';
 import { CategoryFilter } from './components/CategoryFilter';
 import { AppCard } from './components/AppCard';
 import { ManifestoModal } from './components/ManifestoModal';
+import { ChangelogDrawer } from './components/ChangelogDrawer';
 import { Footer } from './components/Footer';
 import { setAudioMuted, playTabClick } from './utils/audio';
 import { Search } from 'lucide-react';
@@ -17,6 +18,7 @@ export const App: React.FC = () => {
     return localStorage.getItem('harkco_hub_muted') === 'true';
   });
   const [isManifestoOpen, setIsManifestoOpen] = useState(false);
+  const [isChangelogOpen, setIsChangelogOpen] = useState(false);
   const [fleetData, setFleetData] = useState<FleetResponse | null>(null);
 
   // Sync with live fleet
@@ -126,6 +128,7 @@ export const App: React.FC = () => {
         isMuted={isMuted}
         onToggleMute={handleToggleMute}
         onOpenManifesto={() => setIsManifestoOpen(true)}
+        onOpenChangelog={() => setIsChangelogOpen(true)}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         fleetStatus={fleetData?.fleet_status || 'all_operational'}
@@ -206,6 +209,12 @@ export const App: React.FC = () => {
       <ManifestoModal
         isOpen={isManifestoOpen}
         onClose={() => setIsManifestoOpen(false)}
+      />
+
+      {/* Atelier Changelog Drawer */}
+      <ChangelogDrawer
+        isOpen={isChangelogOpen}
+        onClose={() => setIsChangelogOpen(false)}
       />
 
       {/* Footer */}

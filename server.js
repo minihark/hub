@@ -1,6 +1,7 @@
 import http from 'node:http';
 import path from 'node:path';
 import sirv from 'sirv';
+import { generateRssXml, getChangelog } from './feed-generator.js';
 
 const PORT = Number(process.env.PORT) || 80;
 const VAKT_API_URL = process.env.VAKT_API_URL || 'https://vakt.apps.harkco.se/api/monitors';
@@ -86,9 +87,10 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // GET /health
-  if (req.method === 'GET' && pathname === '/health') {
+  // GET or HEAD /health
+  if ((req.method === 'GET' || req.method === 'HEAD') && pathname === '/health') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
+    if (req.method === 'HEAD') return res.end();
     res.end(JSON.stringify({
       status: 'ok',
       app: 'Harkco Hub',
@@ -100,10 +102,40 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // GET /api/fleet
-  if (req.method === 'GET' && pathname === '/api/fleet') {
+  // GET or HEAD /api/fleet
+  if ((req.method === 'GET' || req.method === 'HEAD') && pathname === '/api/fleet') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
+    if (req.method === 'HEAD') return res.end();
     res.end(JSON.stringify(cachedFleet));
+    return;
+  }
+
+  // GET or HEAD /feed.xml & /rss.xml (RSS 2.0 / Atom Changelog Feed)
+  if ((req.method === 'GET' || req.method === 'HEAD') && (pathname === '/feed.xml' || pathname === '/rss.xml')) {
+    const rssXml = generateRssXml();
+    res.writeHead(200, {
+      'Content-Type': 'application/rss+xml; charset=utf-8',
+      'Cache-Control': 'public, max-age=300',
+    });
+    if (req.method === 'HEAD') return res.end();
+    res.end(rssXml);
+    return;
+  }
+
+  // GET or HEAD /api/changelog (JSON Changelog Feed)
+  if ((req.method === 'GET' || req.method === 'HEAD') && pathname === '/api/changelog') {
+    const changelog = getChangelog();
+    res.writeHead(200, {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'public, max-age=300',
+    });
+    if (req.method === 'HEAD') return res.end();
+    res.end(JSON.stringify({
+      status: 'ok',
+      count: changelog.length,
+      updated_at: new Date().toISOString(),
+      entries: changelog,
+    }));
     return;
   }
 

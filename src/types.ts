@@ -18,6 +18,20 @@ export interface HarkcoApp {
   githubUrl?: string;
 }
 
+export interface ChangelogEntry {
+  id: string;
+  date: string;
+  title: string;
+  appId: string;
+  appName: string;
+  appUrl: string;
+  category: 'launch' | 'redesign' | 'feature' | 'milestone';
+  version: string;
+  summary: string;
+  highlights: string[];
+  author: string;
+}
+
 export interface MonitorTelemetry {
   id: string;
   name: string;

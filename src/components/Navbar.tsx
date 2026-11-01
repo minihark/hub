@@ -1,11 +1,12 @@
 import React from 'react';
-import { Volume2, VolumeX, BookOpen, Search, Radio } from 'lucide-react';
+import { Volume2, VolumeX, BookOpen, Search, Radio, Rss } from 'lucide-react';
 import { playTabClick, playChime } from '../utils/audio';
 
 interface NavbarProps {
   isMuted: boolean;
   onToggleMute: () => void;
   onOpenManifesto: () => void;
+  onOpenChangelog: () => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
   fleetStatus: 'all_operational' | 'degraded';
@@ -17,6 +18,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   isMuted,
   onToggleMute,
   onOpenManifesto,
+  onOpenChangelog,
   searchQuery,
   onSearchChange,
   fleetStatus,
@@ -82,6 +84,20 @@ export const Navbar: React.FC<NavbarProps> = ({
             </span>
             <span className="text-[10px] text-emerald-400 font-bold hidden lg:inline">OPERATIV</span>
           </a>
+
+          {/* Changelog / Loggbok Button */}
+          <button
+            type="button"
+            onClick={() => {
+              playChime();
+              onOpenChangelog();
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#111726] hover:bg-[#182035] border border-[#1E2840] hover:border-amber-500/40 text-amber-300 transition font-medium"
+            title="Öppna Ateljé-Loggbok & RSS-flöde"
+          >
+            <Rss className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden sm:inline">Loggbok</span>
+          </button>
 
           {/* Philosophy / Manifesto Button */}
           <button

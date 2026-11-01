@@ -16,7 +16,8 @@ COPY package*.json ./
 RUN npm install --omit=dev
 
 COPY --from=builder /app/dist ./dist
-COPY server.js ./
+COPY server.js feed-generator.js ./
+COPY --from=builder /app/src/data/changelog.json ./src/data/
 
 EXPOSE 80
 

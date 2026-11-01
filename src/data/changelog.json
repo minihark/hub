@@ -1,0 +1,214 @@
+[
+  {
+    "id": "vakt-self-healing-action-hooks",
+    "date": "2026-11-01",
+    "title": "Vakt: Automatisk Självläkning med Action Hooks & Telegram-Larm",
+    "appId": "vakt",
+    "appName": "Vakt Sentinel",
+    "appUrl": "https://vakt.apps.harkco.se",
+    "category": "feature",
+    "version": "v1.2.0",
+    "summary": "Autonom självläkning för hela Harkco-flottan. Vid upprepade driftstörningar triggar Vakt automatiska container-omstarter med loop-skydd och realtidslarm till Telegram.",
+    "highlights": [
+      "Konsekutiva fel-radar (standard 3 misslyckade probes / 135 sekunder nertid)",
+      "10-minuters cooldown-skydd per monitor mot farliga restart-loopar",
+      "Direkt HTML-larm i Telegram med maskerad webhook URL och incidentstatistik",
+      "Persistens i SQLite audit-logg och tactile testknapp i inställningspanelen"
+    ],
+    "author": "Minihark & Viktor"
+  },
+  {
+    "id": "hub-launch-central-atelier",
+    "date": "2026-11-01",
+    "title": "Harkco Hub: Central Ateljé-Cockpit för alla 12 Daily Apps",
+    "appId": "hub",
+    "appName": "Harkco Hub",
+    "appUrl": "https://hub.apps.harkco.se",
+    "category": "launch",
+    "version": "v1.0.0",
+    "summary": "Lansering av det centrala ateljé-fönstret för alla Harkcos mjukvaruinstrument. Samlar realtidstelemetri från Vakt, ⌘K snabbsökning, kategorifiltrering och det officiella manifestet.",
+    "highlights": [
+      "Översikt över alla 12 appar i produktion med direktlänkar och källkod",
+      "Live latens- och tillgänglighetstelemetri direkt från Vakt Sentinel",
+      "Syntetiserad mekanisk Web Audio-feedback vid klick och tangentbordsinteraktion",
+      "100% noll annonser och noll tredjepartstrackers i ren minimalistisk mörk estetik"
+    ],
+    "author": "Minihark & Viktor"
+  },
+  {
+    "id": "vakt-telegram-bot-alerts",
+    "date": "2026-10-31",
+    "title": "Vakt: Telegram Bot Larm & HTML Incidentkort",
+    "appId": "vakt",
+    "appName": "Vakt Sentinel",
+    "appUrl": "https://vakt.apps.harkco.se",
+    "category": "feature",
+    "version": "v1.1.0",
+    "summary": "Direktintegration med Telegram Bot API för blixtsnabb incidentrapportering i Viktors privata chatt så fort en tjänst fallerar eller återhämtar sig.",
+    "highlights": [
+      "HTML-formaterade incidentkort med HTTP-status, svarstid och felorsak",
+      "Automatisk extrahering och visning av serverns JSON-felkropp vid 5xx-fel",
+      "Bekräftelse vid återhämtning med exakt beräknad driftstoppstid i sekunder",
+      "Konfigurerbar via slide-over inställningspanel med omedelbart testanrop"
+    ],
+    "author": "Minihark & Viktor"
+  },
+  {
+    "id": "vakt-launch-sentinel",
+    "date": "2026-10-31",
+    "title": "Lansering av Harkco Vakt: Autonom Flotta-Sentinel",
+    "appId": "vakt",
+    "appName": "Vakt Sentinel",
+    "appUrl": "https://vakt.apps.harkco.se",
+    "category": "launch",
+    "version": "v1.0.0",
+    "summary": "Ny app i Harkco-sviten. En autonom övervakningstjänst på Node 22 native SQLite som radar-sveper alla appar var 45:e sekund med historiska sparklines och sonar-ljud.",
+    "highlights": [
+      "Node 22 native SQLite (DatabaseSync) utan tunga externa databasberoenden",
+      "45 sekunders automatisk probeslinga över 11 produktionsändpunkter",
+      "Taktil Web Audio-sonar och responsiv latensvisualisering",
+      "149 kr engångsköp för Pro-funktionalitet och obegränsade larmkanaler"
+    ],
+    "author": "Minihark & Viktor"
+  },
+  {
+    "id": "knattepatrullen-launch",
+    "date": "2026-10-31",
+    "title": "Knattepatrullen: 2D Fordons- och Läräventyr för 5-Åringar",
+    "appId": "knatte",
+    "appName": "Knattepatrullen",
+    "appUrl": "https://knatte.apps.harkco.se",
+    "category": "launch",
+    "version": "v1.0.0",
+    "summary": "Ett taktilt 60fps fysikbaserat 2D barnspel framtaget specifikt för Viktors 5-årige son. Noll frustration, träleksakskänsla, roliga tutknappar och svenskt tal.",
+    "highlights": [
+      "Omöjligt att förlora med automatisk upprättning av välta fordon",
+      "4 fordon: Brandbil, Traktor, Månrover och Jeep",
+      "4 pedagogiska banor: Räkna 1–5, geometriska former, färgmatchning och djurräddning",
+      "Utskrivbart personligt \"Knatte-Körkort\" med guldstjärnor"
+    ],
+    "author": "Minihark & Viktor"
+  },
+  {
+    "id": "puls-knippa-redesign",
+    "date": "2026-10-31",
+    "title": "Puls & Knippa: Taktil Konsensus-Cockpit & Val-Radar",
+    "appId": "puls",
+    "appName": "Puls",
+    "appUrl": "https://puls.apps.harkco.se",
+    "category": "redesign",
+    "version": "v2.0.0",
+    "summary": "Total UX-omdesign av XRPL-cockpiten. 85% visuellt fokus på realtids konsensus-hjärtslag och direkt strömmande val-radar med glasklara animationspulser.",
+    "highlights": [
+      "Kompakt dual-column layout utan oändlig scroll-trötthet",
+      "Teknisk sidolåda för RLUSD-cirkulation, AMM TVL och nätverksändringar",
+      "Sömlös integration med batch-verktyget Knippa för multi-transaktioner",
+      "Blixtsnabb laddtid under 200ms"
+    ],
+    "author": "Minihark & Viktor"
+  },
+  {
+    "id": "skattekoll-fakturacraft-redesign",
+    "date": "2026-10-31",
+    "title": "SkatteKoll & FakturaCraft: Nordiskt Finanspapper & 3-Potters Princip",
+    "appId": "skattekoll",
+    "appName": "SkatteKoll",
+    "appUrl": "https://skattekoll.apps.harkco.se",
+    "category": "redesign",
+    "version": "v2.0.0",
+    "summary": "Lugna, auktoritativa nordiska finansiella instrument i varmt arkivpapper (#F8F7F4), kolsvart bläck och sedelgrönt. Fokus på de tre trygga potterna.",
+    "highlights": [
+      "Automatisk fördelning: Ditt Privatkonto, Skattekontoreserv den 12:e och Momsreserv",
+      "Uppdaterad 2026 års skattetrappa med brytpunkter och 3:12 K10-kalkylator",
+      "FakturaCraft med officiell OCR-beräkning, ROT/RUT och direkt A4 PDF-export",
+      "100% lokal lagring utan databas i molnet"
+    ],
+    "author": "Minihark & Viktor"
+  },
+  {
+    "id": "moteskoll-swiss-redesign",
+    "date": "2026-10-31",
+    "title": "MötesKoll: Swiss Minimalist Braun Odometer",
+    "appId": "moteskoll",
+    "appName": "MötesKoll",
+    "appUrl": "https://moteskoll.apps.harkco.se",
+    "category": "redesign",
+    "version": "v2.0.0",
+    "summary": "Dieter Rams- och Braun-inspirerad mötestimer i varm benvit ton, matt svart och signalorange. Live rullande SEK-odometer visar mötets faktiska kostnad i realtid.",
+    "highlights": [
+      "Stor tydlig tabular SEK-odometer med sekundprecision",
+      "Integrerat åtgärds- och beslutsblock direkt under klockan",
+      "Export av mötesprotokoll till Slack och Markdown",
+      "149 SEK Pro för lokal SQLite-historik och återkommande mötesserier"
+    ],
+    "author": "Minihark & Viktor"
+  },
+  {
+    "id": "qvitt-batch-sync",
+    "date": "2026-10-31",
+    "title": "Qvitt: Synkronisering & Release av PR-batch",
+    "appId": "qvitt",
+    "appName": "Qvitt",
+    "appUrl": "https://qvitt.se",
+    "category": "feature",
+    "version": "v2.4.0",
+    "summary": "Revision och sammanslagning av 17 öppna pull requests (PR #196–#207) med fokus på förbättrad desktop-inramning, kvitto-OCR och smidig notadelning via Swish.",
+    "highlights": [
+      "Förbättrad desktop- och surfplattelayout",
+      "Snabbare bearbetning av kvitto-OCR och objektsdelning",
+      "Realtidssynkronisering för gemensamma krognotor utan appkrav"
+    ],
+    "author": "Minihark & Viktor"
+  },
+  {
+    "id": "bryggkompis-copper-redesign",
+    "date": "2026-10-27",
+    "title": "Bryggkompis: Koppar & Maltpappers-Bryggdag",
+    "appId": "brygg",
+    "appName": "Bryggkompis",
+    "appUrl": "https://brygg.apps.harkco.se",
+    "category": "redesign",
+    "version": "v2.0.0",
+    "summary": "Konsoliderade en 5-flikars labyrint till ett sammanhållet, utskrivbart receptblad i koppar, maltpapper (#F7F3EB) och stoutbrunt.",
+    "highlights": [
+      "Allt på ett blad: Maltnota, Humleschema, Jäst och Kolsyreberäkning",
+      "Exakt Strike Water-kalkylator för perfekt mäskningstemperatur",
+      "Taktil bryggdagsklocka för humlegivor med ljudnotiser"
+    ],
+    "author": "Minihark & Viktor"
+  },
+  {
+    "id": "styrka-chalk-redesign",
+    "date": "2026-10-27",
+    "title": "Styrka: Rå Gymkrita & 5×5 Styrkelyftslogg",
+    "appId": "styrka",
+    "appName": "Styrka",
+    "appUrl": "https://styrka.apps.harkco.se",
+    "category": "redesign",
+    "version": "v2.0.0",
+    "summary": "En kompromisslös träningslogg i matt grafitgrått (#111111), kritvitt och Eleiko säkerhetsorange. Dagens 3 lyft i 85% fokus med cirkulära set-mål.",
+    "highlights": [
+      "Taktila 5×5 cirkulära målknappar för snabb registrering mellan seten",
+      "Inbyggd vikträknare per sida med Eleiko-färgade viktskivor",
+      "Linjär industriell vilotimer med vibrations- och ljudsignal"
+    ],
+    "author": "Minihark & Viktor"
+  },
+  {
+    "id": "akvarium-natural-history-redesign",
+    "date": "2026-10-27",
+    "title": "Fena / Akvarium: Solbelyst Nordisk Naturhistoriebok",
+    "appId": "akvarium",
+    "appName": "Akvarium",
+    "appUrl": "https://akvarium.apps.harkco.se",
+    "category": "redesign",
+    "version": "v2.0.0",
+    "summary": "Transformerades från en mörk 37-knappars instrumentpanel till en varm, solbelyst naturhistorisk bilderbok (#FAF7F2) med interaktivt akvarium.",
+    "highlights": [
+      "Levande akvarium där fiskar simmar och reagerar på matning",
+      "Fisk-Jakten miniäventyr med samlarkort",
+      "Tyst och rogivande upplevelse utan stress eller poängjakt"
+    ],
+    "author": "Minihark & Viktor"
+  }
+]
