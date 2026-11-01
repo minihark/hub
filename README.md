@@ -3,6 +3,8 @@
 > **Unified Tactile Fleet Launcher & Atelier for Harkco Daily Apps**  
 > 100% Zero Ads • Zero Subscriptions • Direct Value Exchange • Gothenburg, Sweden
 
+[![Harkco Fleet Status](https://vakt.apps.harkco.se/badge/fleet.svg)](https://vakt.apps.harkco.se)
+
 ![Harkco Hub Preview](https://hub.apps.harkco.se/assets/index-DAxHZo7h.css)
 
 ## Overview

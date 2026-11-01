@@ -13,13 +13,28 @@ export const Footer: React.FC = () => {
     <footer className="border-t border-[#E5E0D8] dark:border-[#1E2840] bg-[#F0ECE4] dark:bg-[#0A0E17] py-10 px-4 sm:px-6 text-xs text-zinc-600 dark:text-zinc-500 font-mono mt-16 transition-colors">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
         
-        {/* Brand & Mission */}
+        {/* Brand & Mission & Fleet Status Shield */}
         <div className="flex flex-col sm:flex-row items-center gap-3 text-center sm:text-left">
-          <div className="w-7 h-7 rounded-lg bg-white dark:bg-[#111726] border border-[#E5E0D8] dark:border-[#1E2840] flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold">
+          <div className="w-7 h-7 rounded-lg bg-white dark:bg-[#111726] border border-[#E5E0D8] dark:border-[#1E2840] flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-bold shrink-0">
             H
           </div>
           <div>
-            <div className="text-[#111827] dark:text-zinc-300 font-bold">Harkco Software Lab</div>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+              <span className="text-[#111827] dark:text-zinc-300 font-bold">Harkco Software Lab</span>
+              <a
+                href="https://vakt.apps.harkco.se"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Harkco Fleet Status Sentinel"
+                className="inline-block transition-opacity hover:opacity-90 self-center sm:self-auto"
+              >
+                <img
+                  src="https://vakt.apps.harkco.se/badge/fleet.svg"
+                  alt="Harkco Fleet Status"
+                  className="h-5"
+                />
+              </a>
+            </div>
             <div className="text-[11px] text-zinc-500">
               Göteborg, Sverige • Natt- och helgstudio för taktila mjukvaruinstrument
             </div>
