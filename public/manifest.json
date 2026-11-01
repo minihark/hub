@@ -1,0 +1,68 @@
+{
+  "name": "Harkco Hub — Ateljé & Flottöversikt",
+  "short_name": "Harkco Hub",
+  "description": "Central ateljé och snabbstartare för 12 taktila verktyg från Harkco Software Lab. 100% noll annonser.",
+  "start_url": "/",
+  "id": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0A0E17",
+  "theme_color": "#10B981",
+  "lang": "sv-SE",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Knattepatrullen",
+      "short_name": "Knatte",
+      "description": "Starta Knattepatrullen 2D-äventyr för barn",
+      "url": "/?app=knatte#app-knatte",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "SkatteKoll",
+      "short_name": "Skatt",
+      "description": "Kalkylera säker lön, skatt och moms för 2026",
+      "url": "/?app=skattekoll#app-skattekoll",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "MötesKoll",
+      "short_name": "Möte",
+      "description": "Live möteskostnadsmätare och kalkylator",
+      "url": "/?app=moteskoll#app-moteskoll",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Vakt Fleet Sentinel",
+      "short_name": "Vakt",
+      "description": "Inspektera driftstatus för hela appflottan",
+      "url": "/?app=vakt#app-vakt",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "categories": [
+    "productivity",
+    "utilities",
+    "business"
+  ]
+}

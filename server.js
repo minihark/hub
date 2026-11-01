@@ -133,6 +133,45 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // GET or HEAD /sw.js (PWA Service Worker)
+  if ((req.method === 'GET' || req.method === 'HEAD') && pathname === '/sw.js') {
+    const candidatePath = [
+      path.resolve(__dirname, 'public/sw.js'),
+      path.resolve(__dirname, 'dist/sw.js'),
+    ].find((p) => fs.existsSync(p));
+
+    if (candidatePath) {
+      const swContent = fs.readFileSync(candidatePath, 'utf-8');
+      res.writeHead(200, {
+        'Content-Type': 'application/javascript; charset=utf-8',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Service-Worker-Allowed': '/',
+      });
+      if (req.method === 'HEAD') return res.end();
+      res.end(swContent);
+      return;
+    }
+  }
+
+  // GET or HEAD /manifest.json & /manifest.webmanifest (PWA Manifest)
+  if ((req.method === 'GET' || req.method === 'HEAD') && (pathname === '/manifest.json' || pathname === '/manifest.webmanifest')) {
+    const candidatePath = [
+      path.resolve(__dirname, 'public/manifest.json'),
+      path.resolve(__dirname, 'dist/manifest.json'),
+    ].find((p) => fs.existsSync(p));
+
+    if (candidatePath) {
+      const manifestContent = fs.readFileSync(candidatePath, 'utf-8');
+      res.writeHead(200, {
+        'Content-Type': 'application/manifest+json; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600',
+      });
+      if (req.method === 'HEAD') return res.end();
+      res.end(manifestContent);
+      return;
+    }
+  }
+
   // GET or HEAD /widget.js (Embeddable Mini-Launcher Script)
   if ((req.method === 'GET' || req.method === 'HEAD') && pathname === '/widget.js') {
     const candidatePath = [

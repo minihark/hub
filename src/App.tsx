@@ -9,8 +9,8 @@ import { ManifestoModal } from './components/ManifestoModal';
 import { ChangelogDrawer } from './components/ChangelogDrawer';
 import { WidgetEmbedModal } from './components/WidgetEmbedModal';
 import { Footer } from './components/Footer';
-import { setAudioMuted, playTabClick, playLaunchClick, playDismissClick } from './utils/audio';
-import { Search } from 'lucide-react';
+import { setAudioMuted, playTabClick, playLaunchClick, playDismissClick, playChime } from './utils/audio';
+import { Search, WifiOff } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<AppCategory>('all');
@@ -25,6 +25,42 @@ export const App: React.FC = () => {
   const [isChangelogOpen, setIsChangelogOpen] = useState(false);
   const [isWidgetOpen, setIsWidgetOpen] = useState(false);
   const [fleetData, setFleetData] = useState<FleetResponse | null>(null);
+  const [isOffline, setIsOffline] = useState(() => typeof navigator !== 'undefined' ? !navigator.onLine : false);
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+
+  // Monitor network status & PWA install availability
+  useEffect(() => {
+    function handleOnline() {
+      setIsOffline(false);
+    }
+    function handleOffline() {
+      setIsOffline(true);
+    }
+    function handlePrompt(e: Event) {
+      e.preventDefault();
+      setInstallPrompt(e);
+    }
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    window.addEventListener('beforeinstallprompt', handlePrompt);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('beforeinstallprompt', handlePrompt);
+    };
+  }, []);
+
+  const handleInstallApp = async () => {
+    if (!installPrompt) return;
+    playChime();
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setInstallPrompt(null);
+    }
+  };
 
   // Sync theme with document class
   useEffect(() => {
@@ -257,6 +293,14 @@ export const App: React.FC = () => {
       {/* 2px Emerald Accent Top Bar */}
       <div className="h-0.5 w-full bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-500" />
 
+      {/* Offline Status Alert Banner */}
+      {isOffline && (
+        <div className="bg-amber-500/10 dark:bg-amber-500/15 border-b border-amber-500/30 px-4 py-2 text-center text-xs font-mono text-amber-800 dark:text-amber-300 flex items-center justify-center gap-2 select-none">
+          <WifiOff className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+          <span>Offline-läge aktiverat — Hela ateljén och appar körs från lokal PWA-cache.</span>
+        </div>
+      )}
+
       {/* Navigation */}
       <Navbar
         isMuted={isMuted}
@@ -271,6 +315,9 @@ export const App: React.FC = () => {
         fleetStatus={fleetData?.fleet_status || 'all_operational'}
         operationalCount={operationalCount}
         totalCount={HARKCO_APPS.length}
+        isOffline={isOffline}
+        canInstall={!!installPrompt}
+        onInstallApp={handleInstallApp}
       />
 
       {/* Main Workspace */}

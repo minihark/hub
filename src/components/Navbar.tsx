@@ -1,5 +1,5 @@
 import React from 'react';
-import { Volume2, VolumeX, BookOpen, Search, Radio, Rss, Sun, Moon, Code2 } from 'lucide-react';
+import { Volume2, VolumeX, BookOpen, Search, Radio, Rss, Sun, Moon, Code2, WifiOff, Download } from 'lucide-react';
 import { playTabClick, playChime } from '../utils/audio';
 
 interface NavbarProps {
@@ -15,6 +15,9 @@ interface NavbarProps {
   fleetStatus: 'all_operational' | 'degraded';
   operationalCount: number;
   totalCount: number;
+  isOffline?: boolean;
+  canInstall?: boolean;
+  onInstallApp?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -30,6 +33,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   fleetStatus,
   operationalCount,
   totalCount,
+  isOffline,
+  canInstall,
+  onInstallApp,
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-[#F8F7F4]/90 dark:bg-[#0A0E17]/90 backdrop-blur-md border-b border-[#E5E0D8] dark:border-[#1E2840] px-4 sm:px-6 py-3.5 transition-colors duration-200">
@@ -81,21 +87,50 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Right Actions */}
         <div className="flex items-center gap-2 sm:gap-3 text-xs font-mono">
           
+          {/* Offline Status Badge */}
+          {isOffline && (
+            <div
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 font-medium select-none"
+              title="Hubben och appar körs från offline-cache"
+            >
+              <WifiOff className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
+              <span className="text-[10px] font-bold uppercase tracking-wider">Offline</span>
+            </div>
+          )}
+
           {/* Live Fleet Sentinel Link */}
-          <a
-            href="https://vakt.apps.harkco.se"
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => playTabClick()}
-            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-[#111726] hover:bg-[#F3F0EA] dark:hover:bg-[#182035] border border-[#E5E0D8] dark:border-[#1E2840] hover:border-emerald-500/40 text-[#374151] dark:text-zinc-300 transition"
-            title="Öppna Vakt Fleet Sentinel"
-          >
-            <Radio className={`w-3.5 h-3.5 ${fleetStatus === 'all_operational' ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500'} animate-pulse`} />
-            <span className="font-semibold text-[11px]">
-              {operationalCount}/{totalCount}
-            </span>
-            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold hidden lg:inline">OPERATIV</span>
-          </a>
+          {!isOffline && (
+            <a
+              href="https://vakt.apps.harkco.se"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => playTabClick()}
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-[#111726] hover:bg-[#F3F0EA] dark:hover:bg-[#182035] border border-[#E5E0D8] dark:border-[#1E2840] hover:border-emerald-500/40 text-[#374151] dark:text-zinc-300 transition"
+              title="Öppna Vakt Fleet Sentinel"
+            >
+              <Radio className={`w-3.5 h-3.5 ${fleetStatus === 'all_operational' ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500'} animate-pulse`} />
+              <span className="font-semibold text-[11px]">
+                {operationalCount}/{totalCount}
+              </span>
+              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold hidden lg:inline">OPERATIV</span>
+            </a>
+          )}
+
+          {/* PWA Install Button */}
+          {canInstall && onInstallApp && (
+            <button
+              type="button"
+              onClick={() => {
+                playChime();
+                onInstallApp();
+              }}
+              className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/40 text-emerald-700 dark:text-emerald-300 transition font-medium"
+              title="Installera Harkco Hub på hemskärmen eller skrivbordet"
+            >
+              <Download className="w-3.5 h-3.5 text-emerald-500" />
+              <span>Installera</span>
+            </button>
+          )}
 
           {/* Changelog / Loggbok Button */}
           <button
