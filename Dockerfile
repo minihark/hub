@@ -12,6 +12,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=80
 
+RUN apk add --no-cache fontconfig
+
 COPY package*.json ./
 RUN npm install --omit=dev
 

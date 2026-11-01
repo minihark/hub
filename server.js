@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sirv from 'sirv';
+import sharp from 'sharp';
 import { generateRssXml, getChangelog } from './feed-generator.js';
 import { generateHubOgSvg, generateAppOgSvg, getAppMeta } from './og-generator.js';
 
@@ -11,6 +12,21 @@ const __dirname = path.dirname(__filename);
 
 const PORT = Number(process.env.PORT) || 80;
 const VAKT_API_URL = process.env.VAKT_API_URL || 'https://vakt.apps.harkco.se/api/monitors';
+
+// In-memory PNG cache: key -> { buffer, timestamp }
+const pngCache = new Map();
+const CACHE_TTL_MS = 60000; // 60 seconds
+
+async function getOrRenderPng(cacheKey, svgString) {
+  const now = Date.now();
+  const cached = pngCache.get(cacheKey);
+  if (cached && now - cached.timestamp < CACHE_TTL_MS) {
+    return cached.buffer;
+  }
+  const buffer = await sharp(Buffer.from(svgString)).png().toBuffer();
+  pngCache.set(cacheKey, { buffer, timestamp: now });
+  return buffer;
+}
 
 let cachedFleet = {
   status: 'ok',
@@ -145,6 +161,20 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // GET or HEAD /og-image.png & /og/fleet.png (Fleet OpenGraph PNG)
+  if ((req.method === 'GET' || req.method === 'HEAD') && (pathname === '/og-image.png' || pathname === '/og/fleet.png')) {
+    const svg = generateHubOgSvg(cachedFleet);
+    const pngBuffer = await getOrRenderPng(`fleet_${cachedFleet.fleet_status}`, svg);
+    res.writeHead(200, {
+      'Content-Type': 'image/png',
+      'Content-Length': pngBuffer.length,
+      'Cache-Control': 'public, max-age=60',
+    });
+    if (req.method === 'HEAD') return res.end();
+    res.end(pngBuffer);
+    return;
+  }
+
   // GET or HEAD /og-image.svg (Fleet OpenGraph SVG)
   if ((req.method === 'GET' || req.method === 'HEAD') && pathname === '/og-image.svg') {
     const svg = generateHubOgSvg(cachedFleet);
@@ -157,17 +187,64 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // GET or HEAD /api/og (Dynamic OpenGraph SVG with app query param)
-  if ((req.method === 'GET' || req.method === 'HEAD') && pathname === '/api/og') {
-    const appId = parsedUrl.searchParams.get('app');
-    const appData = appId ? cachedFleet.monitors.find((m) => m.id === appId) : null;
-    const svg = appId ? generateAppOgSvg(appId, appData) : generateHubOgSvg(cachedFleet);
+  // GET or HEAD /og/:id.png (Bespoke App OpenGraph PNG)
+  const ogPngMatch = pathname.match(/^\/og\/([a-zA-Z0-9_-]+)\.png$/);
+  if ((req.method === 'GET' || req.method === 'HEAD') && ogPngMatch) {
+    const appId = ogPngMatch[1];
+    const appData = cachedFleet.monitors.find((m) => m.id === appId) || null;
+    const svg = generateAppOgSvg(appId, appData);
+    const pngBuffer = await getOrRenderPng(`app_${appId}_${appData?.status || 'up'}`, svg);
+    res.writeHead(200, {
+      'Content-Type': 'image/png',
+      'Content-Length': pngBuffer.length,
+      'Cache-Control': 'public, max-age=60',
+    });
+    if (req.method === 'HEAD') return res.end();
+    res.end(pngBuffer);
+    return;
+  }
+
+  // GET or HEAD /og/:id.svg (Bespoke App OpenGraph SVG)
+  const ogSvgMatch = pathname.match(/^\/og\/([a-zA-Z0-9_-]+)\.svg$/);
+  if ((req.method === 'GET' || req.method === 'HEAD') && ogSvgMatch) {
+    const appId = ogSvgMatch[1];
+    const appData = cachedFleet.monitors.find((m) => m.id === appId) || null;
+    const svg = generateAppOgSvg(appId, appData);
     res.writeHead(200, {
       'Content-Type': 'image/svg+xml; charset=utf-8',
       'Cache-Control': 'public, max-age=600',
     });
     if (req.method === 'HEAD') return res.end();
     res.end(svg);
+    return;
+  }
+
+  // GET or HEAD /api/og (Dynamic OpenGraph endpoint, format=png|svg)
+  if ((req.method === 'GET' || req.method === 'HEAD') && pathname === '/api/og') {
+    const appId = parsedUrl.searchParams.get('app');
+    const format = parsedUrl.searchParams.get('format') || 'png';
+    const appData = appId ? cachedFleet.monitors.find((m) => m.id === appId) : null;
+    const svg = appId ? generateAppOgSvg(appId, appData) : generateHubOgSvg(cachedFleet);
+
+    if (format === 'svg') {
+      res.writeHead(200, {
+        'Content-Type': 'image/svg+xml; charset=utf-8',
+        'Cache-Control': 'public, max-age=600',
+      });
+      if (req.method === 'HEAD') return res.end();
+      res.end(svg);
+      return;
+    }
+
+    const cacheKey = appId ? `app_${appId}_${appData?.status || 'up'}` : `fleet_${cachedFleet.fleet_status}`;
+    const pngBuffer = await getOrRenderPng(cacheKey, svg);
+    res.writeHead(200, {
+      'Content-Type': 'image/png',
+      'Content-Length': pngBuffer.length,
+      'Cache-Control': 'public, max-age=60',
+    });
+    if (req.method === 'HEAD') return res.end();
+    res.end(pngBuffer);
     return;
   }
 
@@ -183,7 +260,7 @@ const server = http.createServer(async (req, res) => {
           const title = `${meta.name} — Harkco Hub`;
           const desc = `${meta.description} Utvecklad med stolthet av Harkco.`;
           const ogUrl = `https://hub.apps.harkco.se/?app=${meta.id}#app-${meta.id}`;
-          const ogImg = `https://hub.apps.harkco.se/api/og?app=${meta.id}`;
+          const ogImg = `https://hub.apps.harkco.se/og/${meta.id}.png`;
 
           html = html
             .replace(/<title>.*?<\/title>/, `<title>${title}</title>`)
@@ -191,6 +268,7 @@ const server = http.createServer(async (req, res) => {
             .replace(/<meta property="og:description" content=".*?" \/>/, `<meta property="og:description" content="${desc}" />`)
             .replace(/<meta property="og:url" content=".*?" \/>/, `<meta property="og:url" content="${ogUrl}" />`)
             .replace(/<meta property="og:image" content=".*?" \/>/, `<meta property="og:image" content="${ogImg}" />`)
+            .replace(/<meta property="og:image:type" content=".*?" \/>/, `<meta property="og:image:type" content="image/png" />`)
             .replace(/<meta name="twitter:title" content=".*?" \/>/, `<meta name="twitter:title" content="${title}" />`)
             .replace(/<meta name="twitter:description" content=".*?" \/>/, `<meta name="twitter:description" content="${desc}" />`)
             .replace(/<meta name="twitter:image" content=".*?" \/>/, `<meta name="twitter:image" content="${ogImg}" />`);

@@ -83,11 +83,23 @@ export const App: React.FC = () => {
         setTimeout(() => {
           const el = document.getElementById(`app-${targetId}`);
           if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            el.classList.add('ring-2', 'ring-emerald-500', 'ring-offset-2', 'dark:ring-offset-[#0A0E17]');
+            const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            el.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', block: 'center' });
+            
+            const matchedApp = HARKCO_APPS.find((a) => a.id === targetId);
+            const accent = matchedApp?.themeColor || '#10B981';
+            
+            el.style.boxShadow = `0 0 0 3px ${accent}, 0 10px 25px -5px ${accent}40`;
+            el.style.transition = 'box-shadow 0.4s ease';
+
             setTimeout(() => {
-              el.classList.remove('ring-2', 'ring-emerald-500', 'ring-offset-2', 'dark:ring-offset-[#0A0E17]');
+              el.style.boxShadow = '';
             }, 3000);
+
+            // Clean hash to avoid double-triggers on back navigation
+            if (window.location.hash) {
+              window.history.replaceState(null, '', window.location.pathname + (queryApp ? `?app=${queryApp}` : ''));
+            }
           }
         }, 300);
       }
