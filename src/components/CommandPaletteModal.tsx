@@ -27,10 +27,11 @@ import {
   Truck,
   Layers,
   Archive,
-  Star
+  Star,
+  Sliders
 } from 'lucide-react';
 import { HarkcoApp, MonitorTelemetry, AppCategory } from '../types';
-import { playTabClick, playLaunchClick, playDismissClick, playChime } from '../utils/audio';
+import { playTabClick, playLaunchClick, playDismissClick, playChime, SoundTheme, SOUND_THEMES, setSoundTheme, previewSoundTheme } from '../utils/audio';
 
 interface CommandPaletteModalProps {
   isOpen: boolean;
@@ -41,6 +42,8 @@ interface CommandPaletteModalProps {
   onToggleTheme: () => void;
   isMuted: boolean;
   onToggleMute: () => void;
+  soundTheme?: SoundTheme;
+  onSelectSoundTheme?: (theme: SoundTheme) => void;
   onSelectCategory: (category: AppCategory) => void;
   onOpenManifesto: () => void;
   onOpenChangelog: () => void;
@@ -91,6 +94,8 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   onToggleTheme,
   isMuted,
   onToggleMute,
+  soundTheme = 'relay',
+  onSelectSoundTheme,
   onSelectCategory,
   onOpenManifesto,
   onOpenChangelog,
@@ -182,6 +187,27 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         onToggleMute();
         onClose();
       },
+    });
+
+    // Sound Synthesizer Profiles
+    SOUND_THEMES.forEach((themeItem) => {
+      const isActive = soundTheme === themeItem.id;
+      list.push({
+        id: `cmd-sound-theme-${themeItem.id}`,
+        title: `Ljudprofil: ${themeItem.name}`,
+        subtitle: themeItem.description,
+        group: 'commands',
+        icon: <Sliders className={`w-4 h-4 ${isActive ? 'text-emerald-500' : 'text-zinc-400'} shrink-0`} />,
+        badge: isActive ? 'Aktiv' : themeItem.badge,
+        badgeColor: isActive ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 font-bold' : undefined,
+        shortcutHint: isActive ? 'Vald' : undefined,
+        onRun: () => {
+          setSoundTheme(themeItem.id);
+          if (onSelectSoundTheme) onSelectSoundTheme(themeItem.id);
+          previewSoundTheme(themeItem.id);
+          onClose();
+        },
+      });
     });
 
     list.push({

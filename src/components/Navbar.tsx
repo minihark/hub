@@ -1,10 +1,12 @@
 import React from 'react';
-import { Volume2, VolumeX, BookOpen, Search, Radio, Rss, Sun, Moon, Code2, WifiOff, Download } from 'lucide-react';
-import { playTabClick, playChime } from '../utils/audio';
+import { Volume2, VolumeX, BookOpen, Search, Radio, Rss, Sun, Moon, Code2, WifiOff, Download, Sliders } from 'lucide-react';
+import { playTabClick, playChime, SoundTheme, SOUND_THEMES } from '../utils/audio';
 
 interface NavbarProps {
   isMuted: boolean;
   onToggleMute: () => void;
+  soundTheme?: SoundTheme;
+  onCycleSoundTheme?: () => void;
   theme: 'dark' | 'paper';
   onToggleTheme: () => void;
   onOpenManifesto: () => void;
@@ -24,6 +26,8 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({
   isMuted,
   onToggleMute,
+  soundTheme = 'relay',
+  onCycleSoundTheme,
   theme,
   onToggleTheme,
   onOpenManifesto,
@@ -202,19 +206,35 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </button>
 
-          {/* Sound Toggle */}
-          <button
-            type="button"
-            onClick={onToggleMute}
-            className={`p-1.5 rounded-lg border transition ${
-              isMuted
-                ? 'bg-white dark:bg-[#111726] border-[#E5E0D8] dark:border-[#1E2840] text-[#9CA3AF] dark:text-zinc-500'
-                : 'bg-white dark:bg-[#111726] border-emerald-500/40 text-emerald-600 dark:text-emerald-400'
-            }`}
-            title={isMuted ? 'Slå på ljud' : 'Stäng av ljud'}
-          >
-            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-          </button>
+          {/* Sound Toggle & Theme Selector */}
+          <div className="flex items-center gap-1">
+            {!isMuted && onCycleSoundTheme && (
+              <button
+                type="button"
+                onClick={onCycleSoundTheme}
+                className="hidden sm:flex items-center gap-1.5 px-2 py-1.5 rounded-lg border bg-white dark:bg-[#111726] border-[#E5E0D8] dark:border-[#1E2840] hover:border-emerald-500/40 text-[#374151] dark:text-zinc-300 transition group"
+                title={`Aktiv ljudprofil: ${SOUND_THEMES.find(t => t.id === soundTheme)?.name || 'Analogt Relä'}. Klicka för nästa profil (eller tryck 'S').`}
+              >
+                <Sliders className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 group-hover:rotate-45 transition-transform" />
+                <span className="text-[11px] font-mono font-medium">
+                  {SOUND_THEMES.find(t => t.id === soundTheme)?.name || 'Relä'}
+                </span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={onToggleMute}
+              className={`p-1.5 rounded-lg border transition ${
+                isMuted
+                  ? 'bg-white dark:bg-[#111726] border-[#E5E0D8] dark:border-[#1E2840] text-[#9CA3AF] dark:text-zinc-500'
+                  : 'bg-white dark:bg-[#111726] border-emerald-500/40 text-emerald-600 dark:text-emerald-400'
+              }`}
+              title={isMuted ? 'Slå på ljud' : 'Stäng av ljud'}
+            >
+              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            </button>
+          </div>
         </div>
 
       </div>

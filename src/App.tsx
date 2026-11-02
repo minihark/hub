@@ -11,7 +11,7 @@ import { ChangelogDrawer } from './components/ChangelogDrawer';
 import { WidgetEmbedModal } from './components/WidgetEmbedModal';
 import { CommandPaletteModal } from './components/CommandPaletteModal';
 import { Footer } from './components/Footer';
-import { setAudioMuted, playTabClick, playLaunchClick, playDismissClick, playChime } from './utils/audio';
+import { setAudioMuted, playTabClick, playLaunchClick, playDismissClick, playChime, SoundTheme, SOUND_THEMES, getSoundTheme, setSoundTheme, previewSoundTheme } from './utils/audio';
 import { Search, WifiOff } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -20,6 +20,7 @@ export const App: React.FC = () => {
   const [isMuted, setIsMuted] = useState<boolean>(() => {
     return localStorage.getItem('harkco_hub_muted') === 'true';
   });
+  const [soundTheme, setSoundThemeState] = useState<SoundTheme>(() => getSoundTheme());
   const [theme, setTheme] = useState<'dark' | 'paper'>(() => {
     return (localStorage.getItem('harkco_hub_theme') as 'dark' | 'paper') || 'dark';
   });
@@ -179,6 +180,20 @@ export const App: React.FC = () => {
     localStorage.setItem('harkco_hub_muted', String(next));
   };
 
+  const handleSelectSoundTheme = (theme: SoundTheme) => {
+    setSoundTheme(theme);
+    setSoundThemeState(theme);
+  };
+
+  const handleCycleSoundTheme = () => {
+    const themes: SoundTheme[] = ['relay', 'braun', 'velvet'];
+    const nextIndex = (themes.indexOf(soundTheme) + 1) % themes.length;
+    const nextTheme = themes[nextIndex];
+    setSoundTheme(nextTheme);
+    setSoundThemeState(nextTheme);
+    previewSoundTheme(nextTheme);
+  };
+
   // Map of monitor telemetry by app id
   const telemetryMap = useMemo(() => {
     const map: Record<string, MonitorTelemetry> = {};
@@ -331,6 +346,13 @@ export const App: React.FC = () => {
         handleToggleMute();
         return;
       }
+
+      // 's' or 'S' to cycle sound theme
+      if (e.key === 's' || e.key === 'S') {
+        e.preventDefault();
+        handleCycleSoundTheme();
+        return;
+      }
     }
 
     window.addEventListener('keydown', handleKeyDown);
@@ -346,6 +368,7 @@ export const App: React.FC = () => {
     selectedCategory,
     isMuted,
     theme,
+    soundTheme,
   ]);
 
   return (
@@ -366,6 +389,8 @@ export const App: React.FC = () => {
       <Navbar
         isMuted={isMuted}
         onToggleMute={handleToggleMute}
+        soundTheme={soundTheme}
+        onCycleSoundTheme={handleCycleSoundTheme}
         theme={theme}
         onToggleTheme={handleToggleTheme}
         onOpenManifesto={() => setIsManifestoOpen(true)}
@@ -478,6 +503,8 @@ export const App: React.FC = () => {
         onToggleTheme={handleToggleTheme}
         isMuted={isMuted}
         onToggleMute={handleToggleMute}
+        soundTheme={soundTheme}
+        onSelectSoundTheme={handleSelectSoundTheme}
         onSelectCategory={(cat) => {
           setSelectedCategory(cat);
           setSearchQuery('');
@@ -539,7 +566,12 @@ export const App: React.FC = () => {
           <span className="text-[#D1D5DB] dark:text-zinc-700">•</span>
           <span className="flex items-center gap-1">
             <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-[#111726] border border-[#DDD7CD] dark:border-[#263550] text-[#111827] dark:text-zinc-200 font-semibold text-[10px] shadow-2xs">M</kbd>
-            <span className="ml-0.5">Ljud</span>
+            <span className="ml-0.5">{isMuted ? 'Tyst' : 'Ljud'}</span>
+          </span>
+          <span className="text-[#D1D5DB] dark:text-zinc-700">•</span>
+          <span className="flex items-center gap-1">
+            <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-[#111726] border border-[#DDD7CD] dark:border-[#263550] text-[#111827] dark:text-zinc-200 font-semibold text-[10px] shadow-2xs">S</kbd>
+            <span className="ml-0.5">{SOUND_THEMES.find(t => t.id === soundTheme)?.name || 'Relä'}</span>
           </span>
           <span className="text-[#D1D5DB] dark:text-zinc-700">•</span>
           <span className="flex items-center gap-1">
