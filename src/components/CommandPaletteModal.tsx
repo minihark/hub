@@ -26,7 +26,8 @@ import {
   Fish,
   Truck,
   Layers,
-  Archive
+  Archive,
+  Star
 } from 'lucide-react';
 import { HarkcoApp, MonitorTelemetry, AppCategory } from '../types';
 import { playTabClick, playLaunchClick, playDismissClick, playChime } from '../utils/audio';
@@ -46,6 +47,8 @@ interface CommandPaletteModalProps {
   onOpenWidget: () => void;
   onInstallApp?: () => void;
   canInstall?: boolean;
+  favoriteIds?: string[];
+  onToggleFavorite?: (appId: string) => void;
 }
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -75,6 +78,7 @@ interface PaletteAction {
   telemetry?: MonitorTelemetry;
   appUrl?: string;
   appId?: string;
+  isFavorite?: boolean;
   onRun: () => void;
 }
 
@@ -93,6 +97,8 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   onOpenWidget,
   onInstallApp,
   canInstall,
+  favoriteIds = [],
+  onToggleFavorite,
 }) => {
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
@@ -116,10 +122,19 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   const allActions = useMemo<PaletteAction[]>(() => {
     const list: PaletteAction[] = [];
 
-    // 1. All 12 Daily Apps
-    apps.forEach((app, index) => {
+    // 1. All 12 Daily Apps (Favorited apps sorted first)
+    const sortedApps = [...apps].sort((a, b) => {
+      const aFav = favoriteIds.includes(a.id);
+      const bFav = favoriteIds.includes(b.id);
+      if (aFav && !bFav) return -1;
+      if (!aFav && bFav) return 1;
+      return 0;
+    });
+
+    sortedApps.forEach((app, index) => {
       const IconCmp = ICON_MAP[app.iconName] || Activity;
       const telem = telemetryMap[app.id];
+      const isFav = favoriteIds.includes(app.id);
 
       list.push({
         id: `app-${app.id}`,
@@ -127,12 +142,13 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         subtitle: `${app.categoryLabel} • ${app.tagline}`,
         group: 'apps',
         icon: <IconCmp className="w-4 h-4 text-emerald-500 shrink-0" />,
-        badge: app.badge,
-        badgeColor: app.themeColor,
+        badge: isFav ? `★ ${app.badge}` : app.badge,
+        badgeColor: isFav ? '#F59E0B' : app.themeColor,
         shortcutHint: index < 9 ? `${index + 1}` : undefined,
         telemetry: telem,
         appUrl: app.url,
         appId: app.id,
+        isFavorite: isFav,
         onRun: () => {
           playLaunchClick();
           window.open(app.url, '_blank', 'noopener,noreferrer');
@@ -273,6 +289,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     onOpenWidget,
     onInstallApp,
     onSelectCategory,
+    favoriteIds,
   ]);
 
   // Filter actions based on query
@@ -456,6 +473,26 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                         <span>{action.telemetry.latency} ms</span>
                       </span>
+                    )}
+
+                    {/* Star Favorite Button for App */}
+                    {isApp && action.appId && onToggleFavorite && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onToggleFavorite(action.appId!);
+                        }}
+                        className={`p-1.5 rounded-md border text-[10px] transition ${
+                          action.isFavorite
+                            ? 'bg-amber-500/20 border-amber-500/40 text-amber-500'
+                            : 'bg-white dark:bg-[#111726] border-[#E5E0D8] dark:border-[#1E2840] text-zinc-400 hover:text-amber-500'
+                        }`}
+                        title={action.isFavorite ? 'Ta bort från snabbval' : 'Fäst som snabbval (kortkommando 1-3)'}
+                        aria-label={action.isFavorite ? 'Ta bort från favoriter' : 'Fäst som favorit'}
+                      >
+                        <Star className={`w-3.5 h-3.5 ${action.isFavorite ? 'fill-amber-400 text-amber-500' : ''}`} />
+                      </button>
                     )}
 
                     {/* Share Link Button for App */}

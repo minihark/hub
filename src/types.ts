@@ -1,4 +1,4 @@
-export type AppCategory = 'all' | 'finance' | 'craft' | 'crypto' | 'tools';
+export type AppCategory = 'all' | 'favorites' | 'finance' | 'craft' | 'crypto' | 'tools';
 
 export interface HarkcoApp {
   id: string;

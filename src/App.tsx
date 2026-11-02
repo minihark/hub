@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { HARKCO_APPS } from './data/apps';
-import { AppCategory, MonitorTelemetry, FleetResponse } from './types';
+import { AppCategory, MonitorTelemetry, FleetResponse, HarkcoApp } from './types';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { CategoryFilter } from './components/CategoryFilter';
 import { AppCard } from './components/AppCard';
+import { FavoritesRibbon } from './components/FavoritesRibbon';
 import { ManifestoModal } from './components/ManifestoModal';
 import { ChangelogDrawer } from './components/ChangelogDrawer';
 import { WidgetEmbedModal } from './components/WidgetEmbedModal';
@@ -29,6 +30,40 @@ export const App: React.FC = () => {
   const [fleetData, setFleetData] = useState<FleetResponse | null>(null);
   const [isOffline, setIsOffline] = useState(() => typeof navigator !== 'undefined' ? !navigator.onLine : false);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
+
+  // Starred / Pinned Favorite App IDs (persisted to localStorage)
+  const [favoriteIds, setFavoriteIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('harkco_hub_favorites');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return ['knatte', 'skattekoll', 'vakt'];
+  });
+
+  const handleToggleFavorite = (appId: string) => {
+    setFavoriteIds((prev) => {
+      const exists = prev.includes(appId);
+      let next: string[];
+      if (exists) {
+        playDismissClick();
+        next = prev.filter((id) => id !== appId);
+      } else {
+        playChime();
+        next = [...prev, appId];
+      }
+      localStorage.setItem('harkco_hub_favorites', JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const favoriteApps = useMemo(() => {
+    return favoriteIds
+      .map((id) => HARKCO_APPS.find((a) => a.id === id))
+      .filter((a): a is HarkcoApp => Boolean(a));
+  }, [favoriteIds]);
 
   // Monitor network status & PWA install availability
   useEffect(() => {
@@ -159,6 +194,7 @@ export const App: React.FC = () => {
   const categoryCounts = useMemo(() => {
     const counts: Record<AppCategory, number> = {
       all: HARKCO_APPS.length,
+      favorites: favoriteIds.length,
       finance: 0,
       craft: 0,
       crypto: 0,
@@ -168,13 +204,16 @@ export const App: React.FC = () => {
       counts[app.category]++;
     });
     return counts;
-  }, []);
+  }, [favoriteIds]);
 
   // Filter apps
   const filteredApps = useMemo(() => {
     return HARKCO_APPS.filter((app) => {
-      const matchesCategory = selectedCategory === 'all' || app.category === selectedCategory;
-      if (!matchesCategory) return false;
+      if (selectedCategory === 'favorites') {
+        if (!favoriteIds.includes(app.id)) return false;
+      } else if (selectedCategory !== 'all' && app.category !== selectedCategory) {
+        return false;
+      }
 
       if (!searchQuery.trim()) return true;
       const q = searchQuery.toLowerCase().trim();
@@ -186,7 +225,7 @@ export const App: React.FC = () => {
         app.features.some((f) => f.toLowerCase().includes(q))
       );
     });
-  }, [selectedCategory, searchQuery]);
+  }, [selectedCategory, searchQuery, favoriteIds]);
 
   // Telemetry summary
   const operationalCount = useMemo(() => {
@@ -260,10 +299,17 @@ export const App: React.FC = () => {
         return;
       }
 
-      // 1-9 to launch apps from current filtered list
+      // 1-9 to launch apps from favorites / filtered list
       if (/^[1-9]$/.test(e.key)) {
-        const index = parseInt(e.key, 10) - 1;
-        const targetApp = filteredApps[index];
+        const num = parseInt(e.key, 10);
+        let targetApp: HarkcoApp | undefined;
+
+        if (!searchQuery.trim() && selectedCategory === 'all' && num <= favoriteApps.length) {
+          targetApp = favoriteApps[num - 1];
+        } else {
+          targetApp = filteredApps[num - 1];
+        }
+
         if (targetApp) {
           e.preventDefault();
           playLaunchClick();
@@ -291,11 +337,13 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [
     filteredApps,
+    favoriteApps,
     isCommandPaletteOpen,
     isManifestoOpen,
     isChangelogOpen,
     isWidgetOpen,
     searchQuery,
+    selectedCategory,
     isMuted,
     theme,
   ]);
@@ -344,6 +392,13 @@ export const App: React.FC = () => {
           medianLatencyMs={medianLatencyMs}
         />
 
+        {/* Pinned Favorites Quick Access Ribbon */}
+        <FavoritesRibbon
+          favoriteApps={favoriteApps}
+          telemetryMap={telemetryMap}
+          onToggleFavorite={handleToggleFavorite}
+        />
+
         {/* Mobile Search Bar / Command Palette Trigger */}
         <div 
           onClick={() => {
@@ -381,6 +436,8 @@ export const App: React.FC = () => {
                 app={app}
                 telemetry={telemetryMap[app.id]}
                 shortcutNumber={index < 9 ? index + 1 : undefined}
+                isFavorite={favoriteIds.includes(app.id)}
+                onToggleFavorite={handleToggleFavorite}
               />
             ))}
           </div>
@@ -430,6 +487,8 @@ export const App: React.FC = () => {
         onOpenWidget={() => setIsWidgetOpen(true)}
         canInstall={!!installPrompt}
         onInstallApp={handleInstallApp}
+        favoriteIds={favoriteIds}
+        onToggleFavorite={handleToggleFavorite}
       />
 
       {/* Manifesto Drawer Modal */}

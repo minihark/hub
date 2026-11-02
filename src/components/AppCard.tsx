@@ -15,7 +15,8 @@ import {
   Truck, 
   Layers, 
   Archive,
-  Share2
+  Share2,
+  Star
 } from 'lucide-react';
 import { playLaunchClick, playChime } from '../utils/audio';
 
@@ -29,6 +30,8 @@ interface AppCardProps {
   app: HarkcoApp;
   telemetry?: MonitorTelemetry;
   shortcutNumber?: number;
+  isFavorite?: boolean;
+  onToggleFavorite?: (appId: string) => void;
 }
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -46,7 +49,13 @@ const ICON_MAP: Record<string, React.ElementType> = {
   Archive,
 };
 
-export const AppCard: React.FC<AppCardProps> = ({ app, telemetry, shortcutNumber }) => {
+export const AppCard: React.FC<AppCardProps> = ({ 
+  app, 
+  telemetry, 
+  shortcutNumber,
+  isFavorite = false,
+  onToggleFavorite,
+}) => {
   const [copied, setCopied] = useState(false);
   const IconComponent = ICON_MAP[app.iconName] || Activity;
   const isUp = telemetry ? telemetry.status === 'up' : true;
@@ -107,12 +116,35 @@ export const AppCard: React.FC<AppCardProps> = ({ app, telemetry, shortcutNumber
             </div>
           </div>
 
-          {/* Latency & Status Pill */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#F8F7F4] dark:bg-[#0A0E17] border border-[#E5E0D8] dark:border-[#1E2840] text-[10px] font-mono">
-            <span className={`w-1.5 h-1.5 rounded-full ${isUp ? 'bg-emerald-500 dark:bg-emerald-400 animate-pulse' : 'bg-rose-500'}`} />
-            <span className={isUp ? 'text-zinc-700 dark:text-zinc-300' : 'text-rose-600 dark:text-rose-400 font-bold'}>
-              {isUp ? `${latency} ms` : 'Offline'}
-            </span>
+          {/* Status, Latency & Star Favorite Controls */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {/* Latency & Status Pill */}
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#F8F7F4] dark:bg-[#0A0E17] border border-[#E5E0D8] dark:border-[#1E2840] text-[10px] font-mono">
+              <span className={`w-1.5 h-1.5 rounded-full ${isUp ? 'bg-emerald-500 dark:bg-emerald-400 animate-pulse' : 'bg-rose-500'}`} />
+              <span className={isUp ? 'text-zinc-700 dark:text-zinc-300' : 'text-rose-600 dark:text-rose-400 font-bold'}>
+                {isUp ? `${latency} ms` : 'Offline'}
+              </span>
+            </div>
+
+            {/* Favorite Star Button */}
+            {onToggleFavorite && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleFavorite(app.id);
+                }}
+                className={`p-1 rounded-lg border transition ${
+                  isFavorite
+                    ? 'bg-amber-500/15 border-amber-500/40 text-amber-500 hover:bg-amber-500/25'
+                    : 'bg-[#F8F7F4] dark:bg-[#0A0E17] border-[#E5E0D8] dark:border-[#1E2840] text-zinc-400 hover:text-amber-500 hover:border-amber-400/40'
+                }`}
+                title={isFavorite ? `Ta bort ${app.name} från snabbval/favoriter` : `Fäst ${app.name} som snabbval (kortkommando 1-3)`}
+                aria-label={isFavorite ? `Ta bort ${app.name} från favoriter` : `Fäst ${app.name} som favorit`}
+              >
+                <Star className={`w-3.5 h-3.5 ${isFavorite ? 'fill-amber-400 text-amber-500' : ''}`} />
+              </button>
+            )}
           </div>
         </div>
 

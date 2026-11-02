@@ -15,6 +15,7 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
 }) => {
   const tabs: { id: AppCategory; label: string }[] = [
     { id: 'all', label: 'Alla' },
+    ...(counts.favorites > 0 ? [{ id: 'favorites' as AppCategory, label: '★ Favoriter' }] : []),
     { id: 'finance', label: 'Ekonomi & Skatt' },
     { id: 'craft', label: 'Hantverk & Fritid' },
     { id: 'crypto', label: 'XRPL & Web3' },
