@@ -8,6 +8,7 @@ import { AppCard } from './components/AppCard';
 import { ManifestoModal } from './components/ManifestoModal';
 import { ChangelogDrawer } from './components/ChangelogDrawer';
 import { WidgetEmbedModal } from './components/WidgetEmbedModal';
+import { CommandPaletteModal } from './components/CommandPaletteModal';
 import { Footer } from './components/Footer';
 import { setAudioMuted, playTabClick, playLaunchClick, playDismissClick, playChime } from './utils/audio';
 import { Search, WifiOff } from 'lucide-react';
@@ -21,6 +22,7 @@ export const App: React.FC = () => {
   const [theme, setTheme] = useState<'dark' | 'paper'>(() => {
     return (localStorage.getItem('harkco_hub_theme') as 'dark' | 'paper') || 'dark';
   });
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isManifestoOpen, setIsManifestoOpen] = useState(false);
   const [isChangelogOpen, setIsChangelogOpen] = useState(false);
   const [isWidgetOpen, setIsWidgetOpen] = useState(false);
@@ -211,6 +213,12 @@ export const App: React.FC = () => {
 
       // Dismiss modals or clear search on Escape
       if (e.key === 'Escape') {
+        if (isCommandPaletteOpen) {
+          e.preventDefault();
+          setIsCommandPaletteOpen(false);
+          playDismissClick();
+          return;
+        }
         if (isManifestoOpen || isChangelogOpen || isWidgetOpen) {
           e.preventDefault();
           setIsManifestoOpen(false);
@@ -232,19 +240,23 @@ export const App: React.FC = () => {
         }
       }
 
-      // Quick Search Focus (/ or Cmd+K / Ctrl+K)
-      if ((e.key === '/' && !isInput) || ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K'))) {
+      // Studio Command Palette (Cmd+K / Ctrl+K or /)
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
         e.preventDefault();
-        const searchInput = document.getElementById('hub-search-input') as HTMLInputElement | null;
-        if (searchInput) {
-          searchInput.focus();
-          searchInput.select();
-        }
+        setIsCommandPaletteOpen((prev) => !prev);
+        playChime();
+        return;
+      }
+
+      if (e.key === '/' && !isInput && !isCommandPaletteOpen && !isManifestoOpen && !isChangelogOpen && !isWidgetOpen) {
+        e.preventDefault();
+        setIsCommandPaletteOpen(true);
+        playTabClick();
         return;
       }
 
       // The following shortcuts only activate when not typing in an input and no drawer/modal is open
-      if (isInput || isManifestoOpen || isChangelogOpen || isWidgetOpen) {
+      if (isInput || isCommandPaletteOpen || isManifestoOpen || isChangelogOpen || isWidgetOpen) {
         return;
       }
 
@@ -279,6 +291,7 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [
     filteredApps,
+    isCommandPaletteOpen,
     isManifestoOpen,
     isChangelogOpen,
     isWidgetOpen,
@@ -310,6 +323,7 @@ export const App: React.FC = () => {
         onOpenManifesto={() => setIsManifestoOpen(true)}
         onOpenChangelog={() => setIsChangelogOpen(true)}
         onOpenWidget={() => setIsWidgetOpen(true)}
+        onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         fleetStatus={fleetData?.fleet_status || 'all_operational'}
@@ -330,17 +344,24 @@ export const App: React.FC = () => {
           medianLatencyMs={medianLatencyMs}
         />
 
-        {/* Mobile Search Bar */}
-        <div className="block md:hidden">
+        {/* Mobile Search Bar / Command Palette Trigger */}
+        <div 
+          onClick={() => {
+            playTabClick();
+            setIsCommandPaletteOpen(true);
+          }}
+          className="block md:hidden cursor-pointer"
+          role="button"
+          tabIndex={0}
+        >
           <div className="relative">
             <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Sök bland alla 12 appar..."
-              className="w-full bg-white dark:bg-[#111726] border border-[#E5E0D8] dark:border-[#1E2840] rounded-lg pl-9 pr-4 py-2.5 text-xs text-[#111827] dark:text-white placeholder-[#9CA3AF] dark:placeholder-zinc-500 focus:outline-none focus:border-cyan-500 font-sans transition-colors"
-            />
+            <div className="w-full bg-white dark:bg-[#111726] border border-[#E5E0D8] dark:border-[#1E2840] rounded-lg pl-9 pr-4 py-2.5 text-xs text-zinc-500 dark:text-zinc-400 font-sans flex items-center justify-between">
+              <span className="truncate">{searchQuery ? `Sökning: "${searchQuery}"` : 'Sök app, kategori, kommando...'}</span>
+              <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 bg-[#F3F0EA] dark:bg-[#0A0E17] px-1.5 py-0.5 rounded border border-[#E5E0D8] dark:border-[#1E2840] font-bold">
+                ⌘K
+              </span>
+            </div>
           </div>
         </div>
 
@@ -390,6 +411,27 @@ export const App: React.FC = () => {
 
       </main>
 
+      {/* Studio Command Palette (Omnibox Modal) */}
+      <CommandPaletteModal
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        apps={HARKCO_APPS}
+        telemetryMap={telemetryMap}
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
+        isMuted={isMuted}
+        onToggleMute={handleToggleMute}
+        onSelectCategory={(cat) => {
+          setSelectedCategory(cat);
+          setSearchQuery('');
+        }}
+        onOpenManifesto={() => setIsManifestoOpen(true)}
+        onOpenChangelog={() => setIsChangelogOpen(true)}
+        onOpenWidget={() => setIsWidgetOpen(true)}
+        canInstall={!!installPrompt}
+        onInstallApp={handleInstallApp}
+      />
+
       {/* Manifesto Drawer Modal */}
       <ManifestoModal
         isOpen={isManifestoOpen}
@@ -425,8 +467,10 @@ export const App: React.FC = () => {
           </span>
           <span className="text-[#D1D5DB] dark:text-zinc-700">•</span>
           <span className="flex items-center gap-1">
+            <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-[#111726] border border-[#DDD7CD] dark:border-[#263550] text-[#111827] dark:text-zinc-200 font-semibold text-[10px] shadow-2xs">⌘K</kbd>
+            <span className="text-[10px] text-zinc-400">/</span>
             <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-[#111726] border border-[#DDD7CD] dark:border-[#263550] text-[#111827] dark:text-zinc-200 font-semibold text-[10px] shadow-2xs">/</kbd>
-            <span className="ml-0.5">Fokusera sök</span>
+            <span className="ml-0.5 font-medium text-emerald-600 dark:text-emerald-400">Kommandomeny</span>
           </span>
           <span className="text-[#D1D5DB] dark:text-zinc-700">•</span>
           <span className="flex items-center gap-1">

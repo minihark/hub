@@ -10,6 +10,7 @@ interface NavbarProps {
   onOpenManifesto: () => void;
   onOpenChangelog: () => void;
   onOpenWidget: () => void;
+  onOpenCommandPalette: () => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
   fleetStatus: 'all_operational' | 'degraded';
@@ -28,8 +29,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenManifesto,
   onOpenChangelog,
   onOpenWidget,
+  onOpenCommandPalette,
   searchQuery,
-  onSearchChange,
+  onSearchChange: _onSearchChange,
   fleetStatus,
   operationalCount,
   totalCount,
@@ -61,23 +63,36 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Center Search Input */}
-        <div className="flex-1 max-w-md relative hidden md:block">
+        {/* Center Search Input / Omnibox Trigger */}
+        <div 
+          onClick={() => {
+            playTabClick();
+            onOpenCommandPalette();
+          }}
+          className="flex-1 max-w-md relative hidden md:block cursor-pointer group"
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              playTabClick();
+              onOpenCommandPalette();
+            }
+          }}
+          title="Öppna Studio Kommandomeny (⌘K eller /)"
+        >
           <div className="relative">
-            <Search className="w-4 h-4 text-[#9CA3AF] dark:text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <input
-              id="hub-search-input"
-              type="text"
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Sök bland alla 12 appar (t.ex. skatt, kvitto, gym, fika)..."
-              className="w-full bg-white dark:bg-[#111726] border border-[#E5E0D8] dark:border-[#1E2840] rounded-lg pl-9 pr-16 py-1.5 text-xs text-[#111827] dark:text-white placeholder-[#9CA3AF] dark:placeholder-zinc-500 focus:outline-none focus:border-cyan-500 font-sans transition-colors"
-            />
+            <Search className="w-4 h-4 text-[#9CA3AF] dark:text-zinc-400 group-hover:text-emerald-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none transition-colors" />
+            <div className="w-full bg-white dark:bg-[#111726] border border-[#E5E0D8] dark:border-[#1E2840] group-hover:border-emerald-500/50 rounded-lg pl-9 pr-16 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 font-sans transition-all flex items-center justify-between shadow-2xs">
+              <span className="truncate">
+                {searchQuery ? `Aktiv sökning: "${searchQuery}"` : 'Sök app, kategori, kommando...'}
+              </span>
+            </div>
             <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none select-none">
-              <span className="text-[10px] font-mono text-[#6B7280] dark:text-zinc-400 bg-[#F3F0EA] dark:bg-[#0A0E17] px-1.5 py-0.5 rounded border border-[#E5E0D8] dark:border-[#1E2840]">
+              <span className="text-[10px] font-mono text-[#6B7280] dark:text-zinc-400 bg-[#F3F0EA] dark:bg-[#0A0E17] px-1.5 py-0.5 rounded border border-[#E5E0D8] dark:border-[#1E2840] group-hover:border-emerald-500/40">
                 /
               </span>
-              <span className="text-[10px] font-mono text-[#6B7280] dark:text-zinc-400 bg-[#F3F0EA] dark:bg-[#0A0E17] px-1.5 py-0.5 rounded border border-[#E5E0D8] dark:border-[#1E2840]">
+              <span className="text-[10px] font-mono text-[#6B7280] dark:text-zinc-400 bg-[#F3F0EA] dark:bg-[#0A0E17] px-1.5 py-0.5 rounded border border-[#E5E0D8] dark:border-[#1E2840] group-hover:border-emerald-500/40 font-bold text-emerald-600 dark:text-emerald-400">
                 ⌘K
               </span>
             </div>
