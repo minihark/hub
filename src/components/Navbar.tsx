@@ -13,6 +13,7 @@ interface NavbarProps {
   onOpenChangelog: () => void;
   onOpenWidget: () => void;
   onOpenCommandPalette: () => void;
+  onOpenTelemetry?: () => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
   fleetStatus: 'all_operational' | 'degraded';
@@ -34,6 +35,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenChangelog,
   onOpenWidget,
   onOpenCommandPalette,
+  onOpenTelemetry,
   searchQuery,
   onSearchChange: _onSearchChange,
   fleetStatus,
@@ -117,22 +119,27 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           )}
 
-          {/* Live Fleet Sentinel Link */}
+          {/* Live Fleet Sentinel Link / Telemetry Drawer Trigger */}
           {!isOffline && (
-            <a
-              href="https://vakt.apps.harkco.se"
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => playTabClick()}
-              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-[#111726] hover:bg-[#F3F0EA] dark:hover:bg-[#182035] border border-[#E5E0D8] dark:border-[#1E2840] hover:border-emerald-500/40 text-[#374151] dark:text-zinc-300 transition"
-              title="Öppna Vakt Fleet Sentinel"
+            <button
+              type="button"
+              onClick={() => {
+                playChime();
+                if (onOpenTelemetry) {
+                  onOpenTelemetry();
+                } else {
+                  window.open('https://vakt.apps.harkco.se', '_blank', 'noopener,noreferrer');
+                }
+              }}
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-[#111726] hover:bg-[#F3F0EA] dark:hover:bg-[#182035] border border-[#E5E0D8] dark:border-[#1E2840] hover:border-emerald-500/40 text-[#374151] dark:text-zinc-300 transition cursor-pointer"
+              title="Öppna 24h Vakt Fleet Telemetri & Tidslinje (Kortkommando: V)"
             >
               <Radio className={`w-3.5 h-3.5 ${fleetStatus === 'all_operational' ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500'} animate-pulse`} />
               <span className="font-semibold text-[11px]">
                 {operationalCount}/{totalCount}
               </span>
               <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold hidden lg:inline">OPERATIV</span>
-            </a>
+            </button>
           )}
 
           {/* PWA Install Button */}

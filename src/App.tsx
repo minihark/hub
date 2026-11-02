@@ -10,6 +10,7 @@ import { ManifestoModal } from './components/ManifestoModal';
 import { ChangelogDrawer } from './components/ChangelogDrawer';
 import { WidgetEmbedModal } from './components/WidgetEmbedModal';
 import { CommandPaletteModal } from './components/CommandPaletteModal';
+import { TelemetryDrawer } from './components/TelemetryDrawer';
 import { Footer } from './components/Footer';
 import { setAudioMuted, playTabClick, playLaunchClick, playDismissClick, playChime, SoundTheme, SOUND_THEMES, getSoundTheme, setSoundTheme, previewSoundTheme } from './utils/audio';
 import { Search, WifiOff } from 'lucide-react';
@@ -28,6 +29,7 @@ export const App: React.FC = () => {
   const [isManifestoOpen, setIsManifestoOpen] = useState(false);
   const [isChangelogOpen, setIsChangelogOpen] = useState(false);
   const [isWidgetOpen, setIsWidgetOpen] = useState(false);
+  const [isTelemetryOpen, setIsTelemetryOpen] = useState(false);
   const [fleetData, setFleetData] = useState<FleetResponse | null>(null);
   const [isOffline, setIsOffline] = useState(() => typeof navigator !== 'undefined' ? !navigator.onLine : false);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
@@ -273,11 +275,12 @@ export const App: React.FC = () => {
           playDismissClick();
           return;
         }
-        if (isManifestoOpen || isChangelogOpen || isWidgetOpen) {
+        if (isManifestoOpen || isChangelogOpen || isWidgetOpen || isTelemetryOpen) {
           e.preventDefault();
           setIsManifestoOpen(false);
           setIsChangelogOpen(false);
           setIsWidgetOpen(false);
+          setIsTelemetryOpen(false);
           playDismissClick();
           return;
         }
@@ -302,7 +305,7 @@ export const App: React.FC = () => {
         return;
       }
 
-      if (e.key === '/' && !isInput && !isCommandPaletteOpen && !isManifestoOpen && !isChangelogOpen && !isWidgetOpen) {
+      if (e.key === '/' && !isInput && !isCommandPaletteOpen && !isManifestoOpen && !isChangelogOpen && !isWidgetOpen && !isTelemetryOpen) {
         e.preventDefault();
         setIsCommandPaletteOpen(true);
         playTabClick();
@@ -310,7 +313,7 @@ export const App: React.FC = () => {
       }
 
       // The following shortcuts only activate when not typing in an input and no drawer/modal is open
-      if (isInput || isCommandPaletteOpen || isManifestoOpen || isChangelogOpen || isWidgetOpen) {
+      if (isInput || isCommandPaletteOpen || isManifestoOpen || isChangelogOpen || isWidgetOpen || isTelemetryOpen) {
         return;
       }
 
@@ -353,6 +356,14 @@ export const App: React.FC = () => {
         handleCycleSoundTheme();
         return;
       }
+
+      // 'v' or 'V' to toggle Vakt telemetry drawer
+      if (e.key === 'v' || e.key === 'V') {
+        e.preventDefault();
+        setIsTelemetryOpen((prev) => !prev);
+        playChime();
+        return;
+      }
     }
 
     window.addEventListener('keydown', handleKeyDown);
@@ -364,6 +375,7 @@ export const App: React.FC = () => {
     isManifestoOpen,
     isChangelogOpen,
     isWidgetOpen,
+    isTelemetryOpen,
     searchQuery,
     selectedCategory,
     isMuted,
@@ -397,6 +409,7 @@ export const App: React.FC = () => {
         onOpenChangelog={() => setIsChangelogOpen(true)}
         onOpenWidget={() => setIsWidgetOpen(true)}
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+        onOpenTelemetry={() => setIsTelemetryOpen(true)}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         fleetStatus={fleetData?.fleet_status || 'all_operational'}
@@ -415,6 +428,7 @@ export const App: React.FC = () => {
           operationalCount={operationalCount}
           totalCount={HARKCO_APPS.length}
           medianLatencyMs={medianLatencyMs}
+          onOpenTelemetry={() => setIsTelemetryOpen(true)}
         />
 
         {/* Pinned Favorites Quick Access Ribbon */}
@@ -512,10 +526,19 @@ export const App: React.FC = () => {
         onOpenManifesto={() => setIsManifestoOpen(true)}
         onOpenChangelog={() => setIsChangelogOpen(true)}
         onOpenWidget={() => setIsWidgetOpen(true)}
+        onOpenTelemetry={() => setIsTelemetryOpen(true)}
         canInstall={!!installPrompt}
         onInstallApp={handleInstallApp}
         favoriteIds={favoriteIds}
         onToggleFavorite={handleToggleFavorite}
+      />
+
+      {/* Vakt Fleet Telemetry Drawer */}
+      <TelemetryDrawer
+        isOpen={isTelemetryOpen}
+        onClose={() => setIsTelemetryOpen(false)}
+        fleetData={fleetData}
+        apps={HARKCO_APPS}
       />
 
       {/* Manifesto Drawer Modal */}
@@ -572,6 +595,11 @@ export const App: React.FC = () => {
           <span className="flex items-center gap-1">
             <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-[#111726] border border-[#DDD7CD] dark:border-[#263550] text-[#111827] dark:text-zinc-200 font-semibold text-[10px] shadow-2xs">S</kbd>
             <span className="ml-0.5">{SOUND_THEMES.find(t => t.id === soundTheme)?.name || 'Relä'}</span>
+          </span>
+          <span className="text-[#D1D5DB] dark:text-zinc-700">•</span>
+          <span className="flex items-center gap-1">
+            <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-[#111726] border border-[#DDD7CD] dark:border-[#263550] text-[#111827] dark:text-zinc-200 font-semibold text-[10px] shadow-2xs">V</kbd>
+            <span className="ml-0.5">Telemetri</span>
           </span>
           <span className="text-[#D1D5DB] dark:text-zinc-700">•</span>
           <span className="flex items-center gap-1">

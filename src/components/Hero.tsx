@@ -1,15 +1,18 @@
 import React from 'react';
+import { playChime } from '../utils/audio';
 
 interface HeroProps {
   operationalCount: number;
   totalCount: number;
   medianLatencyMs: number;
+  onOpenTelemetry?: () => void;
 }
 
 export const Hero: React.FC<HeroProps> = ({
   operationalCount,
   totalCount,
   medianLatencyMs,
+  onOpenTelemetry,
 }) => {
   return (
     <section className="relative pt-6 pb-4 sm:pt-10 sm:pb-8">
@@ -39,16 +42,44 @@ export const Hero: React.FC<HeroProps> = ({
 
         {/* Live Telemetry Metric Strip */}
         <div className="pt-2 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto text-left font-mono">
-          <div className="p-3 rounded-xl bg-white dark:bg-[#111726]/80 border border-[#E5E0D8] dark:border-[#1E2840] shadow-xs">
-            <div className="text-[11px] text-[#6B7280] dark:text-zinc-400 uppercase tracking-wider">Flotta</div>
+          <div 
+            onClick={() => {
+              if (onOpenTelemetry) {
+                playChime();
+                onOpenTelemetry();
+              }
+            }}
+            className={`p-3 rounded-xl bg-white dark:bg-[#111726]/80 border border-[#E5E0D8] dark:border-[#1E2840] shadow-xs ${
+              onOpenTelemetry ? 'cursor-pointer hover:border-emerald-500/50 hover:bg-[#F3F0EA]/50 dark:hover:bg-[#161D2F] transition-all' : ''
+            }`}
+            title={onOpenTelemetry ? 'Klicka för att öppna 24h Vakt Fleet Telemetri' : undefined}
+          >
+            <div className="text-[11px] text-[#6B7280] dark:text-zinc-400 uppercase tracking-wider flex items-center justify-between">
+              <span>Flotta</span>
+              {onOpenTelemetry && <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold">24h ↗</span>}
+            </div>
             <div className="text-base font-bold text-[#111827] dark:text-white mt-0.5 flex items-center gap-1.5">
               <span>{operationalCount}/{totalCount}</span>
-              <span className="text-[10px] text-emerald-800 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded border border-emerald-300 dark:border-emerald-500/20">Grön</span>
+              <span className="text-[10px] text-emerald-800 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded border border-emerald-300 dark:border-emerald-500/20 font-bold">Grön</span>
             </div>
           </div>
 
-          <div className="p-3 rounded-xl bg-white dark:bg-[#111726]/80 border border-[#E5E0D8] dark:border-[#1E2840] shadow-xs">
-            <div className="text-[11px] text-[#6B7280] dark:text-zinc-400 uppercase tracking-wider">Median Latens</div>
+          <div 
+            onClick={() => {
+              if (onOpenTelemetry) {
+                playChime();
+                onOpenTelemetry();
+              }
+            }}
+            className={`p-3 rounded-xl bg-white dark:bg-[#111726]/80 border border-[#E5E0D8] dark:border-[#1E2840] shadow-xs ${
+              onOpenTelemetry ? 'cursor-pointer hover:border-cyan-500/50 hover:bg-[#F3F0EA]/50 dark:hover:bg-[#161D2F] transition-all' : ''
+            }`}
+            title={onOpenTelemetry ? 'Klicka för att öppna 24h Vakt Fleet Telemetri' : undefined}
+          >
+            <div className="text-[11px] text-[#6B7280] dark:text-zinc-400 uppercase tracking-wider flex items-center justify-between">
+              <span>Median Latens</span>
+              {onOpenTelemetry && <span className="text-[9px] text-cyan-600 dark:text-cyan-400 font-bold">Logg ↗</span>}
+            </div>
             <div className="text-base font-bold text-cyan-700 dark:text-cyan-400 mt-0.5">
               {medianLatencyMs} ms
             </div>

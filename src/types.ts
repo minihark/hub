@@ -32,6 +32,13 @@ export interface ChangelogEntry {
   author: string;
 }
 
+export interface MonitorHistoryPoint {
+  statusCode: number;
+  latencyMs: number;
+  isUp: boolean;
+  checkedAt: string;
+}
+
 export interface MonitorTelemetry {
   id: string;
   name: string;
@@ -39,11 +46,27 @@ export interface MonitorTelemetry {
   status: 'up' | 'degraded' | 'down';
   latency: number;
   uptime24h?: number;
+  history?: MonitorHistoryPoint[];
+}
+
+export interface FleetIncident {
+  id: string;
+  monitorId: string;
+  monitorName: string;
+  url: string;
+  statusCode: number;
+  errorMessage: string;
+  errorPayload?: string;
+  startedAt: string;
+  resolvedAt?: string | null;
+  durationSec?: number;
 }
 
 export interface FleetResponse {
   status: string;
   fleet_status: 'all_operational' | 'degraded';
   last_updated: string;
+  overall_uptime?: number;
   monitors: MonitorTelemetry[];
+  incidents?: FleetIncident[];
 }

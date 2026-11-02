@@ -48,6 +48,7 @@ interface CommandPaletteModalProps {
   onOpenManifesto: () => void;
   onOpenChangelog: () => void;
   onOpenWidget: () => void;
+  onOpenTelemetry?: () => void;
   onInstallApp?: () => void;
   canInstall?: boolean;
   favoriteIds?: string[];
@@ -100,6 +101,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   onOpenManifesto,
   onOpenChangelog,
   onOpenWidget,
+  onOpenTelemetry,
   onInstallApp,
   canInstall,
   favoriteIds = [],
@@ -249,10 +251,26 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
       },
     });
 
+    if (onOpenTelemetry) {
+      list.push({
+        id: 'cmd-telemetry-drawer',
+        title: 'Öppna 24h Vakt Fleet Telemetri',
+        subtitle: 'Inspektera 24h upptidstidslinje, latensgrafer och incidentlogg',
+        group: 'commands',
+        icon: <Activity className="w-4 h-4 text-emerald-500 shrink-0" />,
+        shortcutHint: 'V',
+        onRun: () => {
+          playChime();
+          onOpenTelemetry();
+          onClose();
+        },
+      });
+    }
+
     list.push({
       id: 'cmd-vakt',
-      title: 'Öppna Vakt Fleet Sentinel',
-      subtitle: 'Inspektera prober, latenser och incidentloggar för hela flottan',
+      title: 'Öppna Extern Vakt Fleet Sentinel',
+      subtitle: 'Öppna den fullständiga Vakt-instrumentpanelen i ny flik',
       group: 'commands',
       icon: <Radio className="w-4 h-4 text-emerald-500 shrink-0" />,
       onRun: () => {
