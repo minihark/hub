@@ -228,6 +228,35 @@ export const App: React.FC = () => {
     return counts;
   }, [favoriteIds]);
 
+  // Active category list for single-key jumping and cycling
+  const activeCategories = useMemo<AppCategory[]>(() => {
+    const list: AppCategory[] = ['all'];
+    if (favoriteIds.length > 0) list.push('favorites');
+    list.push('finance', 'craft', 'crypto', 'tools');
+    return list;
+  }, [favoriteIds]);
+
+  const handleCycleCategory = (direction: 'next' | 'prev') => {
+    const currentIndex = activeCategories.indexOf(selectedCategory);
+    let nextIndex: number;
+    if (currentIndex === -1) {
+      nextIndex = 0;
+    } else if (direction === 'next') {
+      nextIndex = (currentIndex + 1) % activeCategories.length;
+    } else {
+      nextIndex = (currentIndex - 1 + activeCategories.length) % activeCategories.length;
+    }
+    setSelectedCategory(activeCategories[nextIndex]);
+    playTabClick();
+  };
+
+  const handleSelectCategoryDirect = (cat: AppCategory) => {
+    if (selectedCategory === cat) return;
+    if (cat === 'favorites' && favoriteIds.length === 0) return;
+    setSelectedCategory(cat);
+    playTabClick();
+  };
+
   // Filter apps
   const filteredApps = useMemo(() => {
     return HARKCO_APPS.filter((app) => {
@@ -380,6 +409,50 @@ export const App: React.FC = () => {
         playChime();
         return;
       }
+
+      // Category cycling: ArrowLeft / ArrowRight or [ / ]
+      if (e.key === 'ArrowRight' || e.key === ']') {
+        e.preventDefault();
+        handleCycleCategory('next');
+        return;
+      }
+      if (e.key === 'ArrowLeft' || e.key === '[') {
+        e.preventDefault();
+        handleCycleCategory('prev');
+        return;
+      }
+
+      // Single-key category jumpers
+      if (e.key === 'a' || e.key === 'A' || e.key === '0') {
+        e.preventDefault();
+        handleSelectCategoryDirect('all');
+        return;
+      }
+      if (e.key === '*' || e.key === 'p' || e.key === 'P') {
+        e.preventDefault();
+        handleSelectCategoryDirect('favorites');
+        return;
+      }
+      if (e.key === 'e' || e.key === 'E') {
+        e.preventDefault();
+        handleSelectCategoryDirect('finance');
+        return;
+      }
+      if (e.key === 'c' || e.key === 'C') {
+        e.preventDefault();
+        handleSelectCategoryDirect('craft');
+        return;
+      }
+      if (e.key === 'k' || e.key === 'K' || e.key === 'x' || e.key === 'X') {
+        e.preventDefault();
+        handleSelectCategoryDirect('crypto');
+        return;
+      }
+      if (e.key === 'w' || e.key === 'W') {
+        e.preventDefault();
+        handleSelectCategoryDirect('tools');
+        return;
+      }
     }
 
     window.addEventListener('keydown', handleKeyDown);
@@ -396,6 +469,7 @@ export const App: React.FC = () => {
     isFeedbackOpen,
     searchQuery,
     selectedCategory,
+    activeCategories,
     isMuted,
     theme,
     soundTheme,
@@ -625,6 +699,13 @@ export const App: React.FC = () => {
             <span>–</span>
             <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-[#111726] border border-[#DDD7CD] dark:border-[#263550] text-[#111827] dark:text-zinc-200 font-semibold text-[10px] shadow-2xs">9</kbd>
             <span className="ml-0.5">Starta app</span>
+          </span>
+          <span className="text-[#D1D5DB] dark:text-zinc-700">•</span>
+          <span className="flex items-center gap-1" title="Växla kategori med piltangenter eller snabbknapparna A, *, E, C, K, W">
+            <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-[#111726] border border-[#DDD7CD] dark:border-[#263550] text-[#111827] dark:text-zinc-200 font-semibold text-[10px] shadow-2xs">←</kbd>
+            <span className="text-[10px] text-zinc-400">/</span>
+            <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-[#111726] border border-[#DDD7CD] dark:border-[#263550] text-[#111827] dark:text-zinc-200 font-semibold text-[10px] shadow-2xs">→</kbd>
+            <span className="ml-0.5">Kategori</span>
           </span>
           <span className="text-[#D1D5DB] dark:text-zinc-700">•</span>
           <span className="flex items-center gap-1">

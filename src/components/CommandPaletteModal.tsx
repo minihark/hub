@@ -331,12 +331,13 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
     }
 
     // 3. Category Filters
-    const categories: { id: AppCategory; label: string; count: number }[] = [
-      { id: 'all', label: 'Visa alla appar', count: apps.length },
-      { id: 'finance', label: 'Filtrera: Ekonomi & Skatt', count: apps.filter(a => a.category === 'finance').length },
-      { id: 'craft', label: 'Filtrera: Hantverk & Brygg', count: apps.filter(a => a.category === 'craft').length },
-      { id: 'crypto', label: 'Filtrera: Krypto & Validering', count: apps.filter(a => a.category === 'crypto').length },
-      { id: 'tools', label: 'Filtrera: Verktyg & Monitor', count: apps.filter(a => a.category === 'tools').length },
+    const categories: { id: AppCategory; label: string; count: number; shortcutHint: string }[] = [
+      { id: 'all', label: 'Visa alla appar', count: apps.length, shortcutHint: 'A' },
+      ...(favoriteIds.length > 0 ? [{ id: 'favorites' as AppCategory, label: 'Visa sparade favoriter', count: favoriteIds.length, shortcutHint: '*' }] : []),
+      { id: 'finance', label: 'Filtrera: Ekonomi & Skatt', count: apps.filter(a => a.category === 'finance').length, shortcutHint: 'E' },
+      { id: 'craft', label: 'Filtrera: Hantverk & Fritid', count: apps.filter(a => a.category === 'craft').length, shortcutHint: 'C' },
+      { id: 'crypto', label: 'Filtrera: XRPL & Web3', count: apps.filter(a => a.category === 'crypto').length, shortcutHint: 'K' },
+      { id: 'tools', label: 'Filtrera: System & Spel', count: apps.filter(a => a.category === 'tools').length, shortcutHint: 'W' },
     ];
 
     categories.forEach(cat => {
@@ -346,6 +347,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         subtitle: `${cat.count} verktyg i denna kategori`,
         group: 'categories',
         icon: <Filter className="w-4 h-4 text-cyan-500 shrink-0" />,
+        shortcutHint: cat.shortcutHint,
         onRun: () => {
           playTabClick();
           onSelectCategory(cat.id);
