@@ -32,6 +32,7 @@ interface AppCardProps {
   shortcutNumber?: number;
   isFavorite?: boolean;
   onToggleFavorite?: (appId: string) => void;
+  index?: number;
 }
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -55,14 +56,18 @@ export const AppCard: React.FC<AppCardProps> = ({
   shortcutNumber,
   isFavorite = false,
   onToggleFavorite,
+  index = 0,
 }) => {
   const [copied, setCopied] = useState(false);
   const IconComponent = ICON_MAP[app.iconName] || Activity;
   const isUp = telemetry ? telemetry.status === 'up' : true;
   const latency = telemetry?.latency || 24;
 
+  // Spatial pan across 3-column desktop layout (-0.4, 0.0, +0.4)
+  const pan = ((index % 3) - 1) * 0.4;
+
   const handleShare = async () => {
-    playChime();
+    playChime(pan);
     const deepLinkUrl = `${window.location.origin}/?app=${app.id}#app-${app.id}`;
     if (typeof navigator !== 'undefined' && navigator.share && /mobile|android|iphone|ipad/i.test(navigator.userAgent)) {
       try {
@@ -202,7 +207,7 @@ export const AppCard: React.FC<AppCardProps> = ({
               href={app.githubUrl}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => playLaunchClick()}
+              onClick={() => playLaunchClick(pan)}
               className="p-2 rounded-lg bg-[#F8F7F4] dark:bg-[#0A0E17] hover:bg-[#EFECE6] dark:hover:bg-[#182035] border border-[#E5E0D8] dark:border-[#1E2840] text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition"
               title="Visa källkod på GitHub"
             >
@@ -214,7 +219,7 @@ export const AppCard: React.FC<AppCardProps> = ({
             href={app.url}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => playLaunchClick()}
+            onClick={() => playLaunchClick(pan)}
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white dark:text-[#0A0E17] font-semibold text-xs transition shadow-sm font-sans"
             title={shortcutNumber ? `Öppna ${app.name} (Kortkommando: ${shortcutNumber})` : `Öppna ${app.name}`}
           >

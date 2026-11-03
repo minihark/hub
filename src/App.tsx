@@ -11,6 +11,7 @@ import { ChangelogDrawer } from './components/ChangelogDrawer';
 import { WidgetEmbedModal } from './components/WidgetEmbedModal';
 import { CommandPaletteModal } from './components/CommandPaletteModal';
 import { TelemetryDrawer } from './components/TelemetryDrawer';
+import { SoundSettingsModal } from './components/SoundSettingsModal';
 import { Footer } from './components/Footer';
 import { setAudioMuted, playTabClick, playLaunchClick, playDismissClick, playChime, SoundTheme, SOUND_THEMES, getSoundTheme, setSoundTheme, previewSoundTheme } from './utils/audio';
 import { Search, WifiOff } from 'lucide-react';
@@ -30,6 +31,7 @@ export const App: React.FC = () => {
   const [isChangelogOpen, setIsChangelogOpen] = useState(false);
   const [isWidgetOpen, setIsWidgetOpen] = useState(false);
   const [isTelemetryOpen, setIsTelemetryOpen] = useState(false);
+  const [isSoundSettingsOpen, setIsSoundSettingsOpen] = useState(false);
   const [fleetData, setFleetData] = useState<FleetResponse | null>(null);
   const [isOffline, setIsOffline] = useState(() => typeof navigator !== 'undefined' ? !navigator.onLine : false);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
@@ -275,12 +277,13 @@ export const App: React.FC = () => {
           playDismissClick();
           return;
         }
-        if (isManifestoOpen || isChangelogOpen || isWidgetOpen || isTelemetryOpen) {
+        if (isManifestoOpen || isChangelogOpen || isWidgetOpen || isTelemetryOpen || isSoundSettingsOpen) {
           e.preventDefault();
           setIsManifestoOpen(false);
           setIsChangelogOpen(false);
           setIsWidgetOpen(false);
           setIsTelemetryOpen(false);
+          setIsSoundSettingsOpen(false);
           playDismissClick();
           return;
         }
@@ -305,7 +308,7 @@ export const App: React.FC = () => {
         return;
       }
 
-      if (e.key === '/' && !isInput && !isCommandPaletteOpen && !isManifestoOpen && !isChangelogOpen && !isWidgetOpen && !isTelemetryOpen) {
+      if (e.key === '/' && !isInput && !isCommandPaletteOpen && !isManifestoOpen && !isChangelogOpen && !isWidgetOpen && !isTelemetryOpen && !isSoundSettingsOpen) {
         e.preventDefault();
         setIsCommandPaletteOpen(true);
         playTabClick();
@@ -313,7 +316,7 @@ export const App: React.FC = () => {
       }
 
       // The following shortcuts only activate when not typing in an input and no drawer/modal is open
-      if (isInput || isCommandPaletteOpen || isManifestoOpen || isChangelogOpen || isWidgetOpen || isTelemetryOpen) {
+      if (isInput || isCommandPaletteOpen || isManifestoOpen || isChangelogOpen || isWidgetOpen || isTelemetryOpen || isSoundSettingsOpen) {
         return;
       }
 
@@ -376,6 +379,7 @@ export const App: React.FC = () => {
     isChangelogOpen,
     isWidgetOpen,
     isTelemetryOpen,
+    isSoundSettingsOpen,
     searchQuery,
     selectedCategory,
     isMuted,
@@ -403,6 +407,7 @@ export const App: React.FC = () => {
         onToggleMute={handleToggleMute}
         soundTheme={soundTheme}
         onCycleSoundTheme={handleCycleSoundTheme}
+        onOpenSoundSettings={() => setIsSoundSettingsOpen(true)}
         theme={theme}
         onToggleTheme={handleToggleTheme}
         onOpenManifesto={() => setIsManifestoOpen(true)}
@@ -473,6 +478,7 @@ export const App: React.FC = () => {
               <AppCard
                 key={app.id}
                 app={app}
+                index={index}
                 telemetry={telemetryMap[app.id]}
                 shortcutNumber={index < 9 ? index + 1 : undefined}
                 isFavorite={favoriteIds.includes(app.id)}
@@ -519,6 +525,7 @@ export const App: React.FC = () => {
         onToggleMute={handleToggleMute}
         soundTheme={soundTheme}
         onSelectSoundTheme={handleSelectSoundTheme}
+        onOpenSoundSettings={() => setIsSoundSettingsOpen(true)}
         onSelectCategory={(cat) => {
           setSelectedCategory(cat);
           setSearchQuery('');
@@ -531,6 +538,16 @@ export const App: React.FC = () => {
         onInstallApp={handleInstallApp}
         favoriteIds={favoriteIds}
         onToggleFavorite={handleToggleFavorite}
+      />
+
+      {/* Sound & Haptics Studio Modal */}
+      <SoundSettingsModal
+        isOpen={isSoundSettingsOpen}
+        onClose={() => setIsSoundSettingsOpen(false)}
+        isMuted={isMuted}
+        onToggleMute={handleToggleMute}
+        soundTheme={soundTheme}
+        onSelectSoundTheme={handleSelectSoundTheme}
       />
 
       {/* Vakt Fleet Telemetry Drawer */}

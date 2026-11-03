@@ -7,6 +7,7 @@ interface NavbarProps {
   onToggleMute: () => void;
   soundTheme?: SoundTheme;
   onCycleSoundTheme?: () => void;
+  onOpenSoundSettings?: () => void;
   theme: 'dark' | 'paper';
   onToggleTheme: () => void;
   onOpenManifesto: () => void;
@@ -29,6 +30,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onToggleMute,
   soundTheme = 'relay',
   onCycleSoundTheme,
+  onOpenSoundSettings,
   theme,
   onToggleTheme,
   onOpenManifesto,
@@ -215,12 +217,19 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Sound Toggle & Theme Selector */}
           <div className="flex items-center gap-1">
-            {!isMuted && onCycleSoundTheme && (
+            {!isMuted && (onOpenSoundSettings || onCycleSoundTheme) && (
               <button
                 type="button"
-                onClick={onCycleSoundTheme}
-                className="hidden sm:flex items-center gap-1.5 px-2 py-1.5 rounded-lg border bg-white dark:bg-[#111726] border-[#E5E0D8] dark:border-[#1E2840] hover:border-emerald-500/40 text-[#374151] dark:text-zinc-300 transition group"
-                title={`Aktiv ljudprofil: ${SOUND_THEMES.find(t => t.id === soundTheme)?.name || 'Analogt Relä'}. Klicka för nästa profil (eller tryck 'S').`}
+                onClick={() => {
+                  if (onOpenSoundSettings) {
+                    playTabClick();
+                    onOpenSoundSettings();
+                  } else if (onCycleSoundTheme) {
+                    onCycleSoundTheme();
+                  }
+                }}
+                className="hidden sm:flex items-center gap-1.5 px-2 py-1.5 rounded-lg border bg-white dark:bg-[#111726] border-[#E5E0D8] dark:border-[#1E2840] hover:border-emerald-500/40 text-[#374151] dark:text-zinc-300 transition group cursor-pointer"
+                title={`Ljudprofil: ${SOUND_THEMES.find(t => t.id === soundTheme)?.name || 'Analogt Relä'}. Klicka för att öppna ljud- & haptikstudio.`}
               >
                 <Sliders className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 group-hover:rotate-45 transition-transform" />
                 <span className="text-[11px] font-mono font-medium">

@@ -1,6 +1,6 @@
 /**
  * Harkco Studio Web Audio Engine
- * Tactile micro-sound synthesizer with selectable hardware profiles
+ * Tactile micro-sound synthesizer with selectable hardware profiles, master volume control, spatial stereo panning, and mobile haptics
  */
 
 export type SoundTheme = 'relay' | 'braun' | 'velvet';
@@ -34,15 +34,37 @@ export const SOUND_THEMES: SoundThemeInfo[] = [
 ];
 
 let audioCtx: AudioContext | null = null;
+let masterGainNode: GainNode | null = null;
 let isMuted = false;
+let masterVolume = 0.65; // Default master volume (0.0 to 1.0)
 let currentTheme: SoundTheme = 'relay';
+let isSpatialEnabled = true;
+let isHapticsEnabled = true;
 
-// Initialize sound theme from localStorage if available
+// Initialize settings from localStorage if available
 if (typeof window !== 'undefined') {
   try {
-    const saved = localStorage.getItem('harkco_hub_sound_theme') as SoundTheme | null;
-    if (saved && (saved === 'relay' || saved === 'braun' || saved === 'velvet')) {
-      currentTheme = saved;
+    const savedTheme = localStorage.getItem('harkco_hub_sound_theme') as SoundTheme | null;
+    if (savedTheme && (savedTheme === 'relay' || savedTheme === 'braun' || savedTheme === 'velvet')) {
+      currentTheme = savedTheme;
+    }
+
+    const savedVol = localStorage.getItem('harkco_hub_audio_volume');
+    if (savedVol !== null) {
+      const parsedVol = parseFloat(savedVol);
+      if (!isNaN(parsedVol) && parsedVol >= 0 && parsedVol <= 1) {
+        masterVolume = parsedVol;
+      }
+    }
+
+    const savedSpatial = localStorage.getItem('harkco_hub_spatial_audio');
+    if (savedSpatial !== null) {
+      isSpatialEnabled = savedSpatial === 'true';
+    }
+
+    const savedHaptics = localStorage.getItem('harkco_hub_haptics');
+    if (savedHaptics !== null) {
+      isHapticsEnabled = savedHaptics === 'true';
     }
   } catch {}
 }
@@ -61,12 +83,96 @@ function getAudioContext(): AudioContext | null {
   return audioCtx;
 }
 
+function getMasterGain(ctx: AudioContext): GainNode {
+  if (!masterGainNode) {
+    masterGainNode = ctx.createGain();
+    masterGainNode.gain.setValueAtTime(isMuted ? 0 : masterVolume, ctx.currentTime);
+    masterGainNode.connect(ctx.destination);
+  }
+  return masterGainNode;
+}
+
+function connectToOutput(ctx: AudioContext, node: AudioNode, pan: number = 0) {
+  const master = getMasterGain(ctx);
+  if (isSpatialEnabled && pan !== 0 && typeof ctx.createStereoPanner === 'function') {
+    try {
+      const panner = ctx.createStereoPanner();
+      panner.pan.setValueAtTime(Math.max(-1, Math.min(1, pan)), ctx.currentTime);
+      node.connect(panner);
+      panner.connect(master);
+      return;
+    } catch {}
+  }
+  node.connect(master);
+}
+
+function triggerHaptic(pattern: number | number[]) {
+  if (!isHapticsEnabled) return;
+  if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+    try {
+      navigator.vibrate(pattern);
+    } catch {}
+  }
+}
+
+export function isHapticsSupported(): boolean {
+  return typeof navigator !== 'undefined' && 'vibrate' in navigator;
+}
+
 export function setAudioMuted(muted: boolean) {
   isMuted = muted;
+  if (masterGainNode && audioCtx) {
+    masterGainNode.gain.setValueAtTime(muted ? 0 : masterVolume, audioCtx.currentTime);
+  }
 }
 
 export function getAudioMuted(): boolean {
   return isMuted;
+}
+
+export function setAudioVolume(volume: number) {
+  masterVolume = Math.max(0, Math.min(1, volume));
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem('harkco_hub_audio_volume', String(masterVolume));
+    } catch {}
+  }
+  if (masterGainNode && audioCtx && !isMuted) {
+    masterGainNode.gain.setValueAtTime(masterVolume, audioCtx.currentTime);
+  }
+}
+
+export function getAudioVolume(): number {
+  return masterVolume;
+}
+
+export function setSpatialAudioEnabled(enabled: boolean) {
+  isSpatialEnabled = enabled;
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem('harkco_hub_spatial_audio', String(enabled));
+    } catch {}
+  }
+}
+
+export function getSpatialAudioEnabled(): boolean {
+  return isSpatialEnabled;
+}
+
+export function setHapticsEnabled(enabled: boolean) {
+  isHapticsEnabled = enabled;
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem('harkco_hub_haptics', String(enabled));
+    } catch {}
+  }
+  if (enabled) {
+    triggerHaptic(15);
+  }
+}
+
+export function getHapticsEnabled(): boolean {
+  return isHapticsEnabled;
 }
 
 export function setSoundTheme(theme: SoundTheme) {
@@ -90,8 +196,9 @@ export function previewSoundTheme(theme: SoundTheme) {
   currentTheme = previous;
 }
 
-export function playLaunchClick() {
-  if (isMuted) return;
+export function playLaunchClick(pan: number = 0) {
+  triggerHaptic(20);
+  if (isMuted || masterVolume === 0) return;
   const ctx = getAudioContext();
   if (!ctx) return;
 
@@ -107,7 +214,7 @@ export function playLaunchClick() {
       gain1.gain.setValueAtTime(0.04, now);
       gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
       osc1.connect(gain1);
-      gain1.connect(ctx.destination);
+      connectToOutput(ctx, gain1, pan);
       osc1.start(now);
       osc1.stop(now + 0.025);
 
@@ -118,7 +225,7 @@ export function playLaunchClick() {
       gain2.gain.setValueAtTime(0.03, now + 0.028);
       gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
       osc2.connect(gain2);
-      gain2.connect(ctx.destination);
+      connectToOutput(ctx, gain2, pan);
       osc2.start(now + 0.028);
       osc2.stop(now + 0.06);
       return;
@@ -132,10 +239,10 @@ export function playLaunchClick() {
         const gain = ctx.createGain();
         osc.type = 'sine';
         osc.frequency.setValueAtTime(freq, now + idx * 0.015);
-        gain.gain.setValueAtTime(0.025, now + idx * 0.015);
+        gain.gain.setValueAtTime(0.03, now + idx * 0.015);
         gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18 + idx * 0.02);
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        connectToOutput(ctx, gain, pan);
         osc.start(now + idx * 0.015);
         osc.stop(now + 0.2);
       });
@@ -151,7 +258,7 @@ export function playLaunchClick() {
     gain.gain.setValueAtTime(0.08, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    connectToOutput(ctx, gain, pan);
     osc.start(now);
     osc.stop(now + 0.08);
 
@@ -164,14 +271,15 @@ export function playLaunchClick() {
     snapGain.gain.setValueAtTime(0.025, now);
     snapGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.02);
     snap.connect(snapGain);
-    snapGain.connect(ctx.destination);
+    connectToOutput(ctx, snapGain, pan);
     snap.start(now);
     snap.stop(now + 0.02);
   } catch {}
 }
 
-export function playTabClick() {
-  if (isMuted) return;
+export function playTabClick(pan: number = 0) {
+  triggerHaptic(8);
+  if (isMuted || masterVolume === 0) return;
   const ctx = getAudioContext();
   if (!ctx) return;
 
@@ -184,10 +292,10 @@ export function playTabClick() {
       const gain = ctx.createGain();
       osc.type = 'sine';
       osc.frequency.setValueAtTime(1400, now);
-      gain.gain.setValueAtTime(0.025, now);
+      gain.gain.setValueAtTime(0.028, now);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.016);
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      connectToOutput(ctx, gain, pan);
       osc.start(now);
       osc.stop(now + 0.016);
       return;
@@ -202,7 +310,7 @@ export function playTabClick() {
       gain.gain.setValueAtTime(0.035, now);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      connectToOutput(ctx, gain, pan);
       osc.start(now);
       osc.stop(now + 0.045);
       return;
@@ -214,17 +322,18 @@ export function playTabClick() {
     osc.type = 'triangle';
     osc.frequency.setValueAtTime(480, now);
     osc.frequency.exponentialRampToValueAtTime(140, now + 0.028);
-    gain.gain.setValueAtTime(0.035, now);
+    gain.gain.setValueAtTime(0.04, now);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.028);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    connectToOutput(ctx, gain, pan);
     osc.start(now);
     osc.stop(now + 0.028);
   } catch {}
 }
 
-export function playDismissClick() {
-  if (isMuted) return;
+export function playDismissClick(pan: number = 0) {
+  triggerHaptic(12);
+  if (isMuted || masterVolume === 0) return;
   const ctx = getAudioContext();
   if (!ctx) return;
 
@@ -241,7 +350,7 @@ export function playDismissClick() {
       gain.gain.setValueAtTime(0.03, now);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      connectToOutput(ctx, gain, pan);
       osc.start(now);
       osc.stop(now + 0.025);
       return;
@@ -257,7 +366,7 @@ export function playDismissClick() {
       gain.gain.setValueAtTime(0.03, now);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      connectToOutput(ctx, gain, pan);
       osc.start(now);
       osc.stop(now + 0.06);
       return;
@@ -272,14 +381,15 @@ export function playDismissClick() {
     gain.gain.setValueAtTime(0.04, now);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    connectToOutput(ctx, gain, pan);
     osc.start(now);
     osc.stop(now + 0.05);
   } catch {}
 }
 
-export function playChime() {
-  if (isMuted) return;
+export function playChime(pan: number = 0) {
+  triggerHaptic([10, 35, 15]);
+  if (isMuted || masterVolume === 0) return;
   const ctx = getAudioContext();
   if (!ctx) return;
 
@@ -297,7 +407,7 @@ export function playChime() {
         gain.gain.setValueAtTime(0.03, now + idx * 0.04);
         gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.04 + 0.05);
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        connectToOutput(ctx, gain, pan);
         osc.start(now + idx * 0.04);
         osc.stop(now + idx * 0.04 + 0.05);
       });
@@ -315,7 +425,7 @@ export function playChime() {
         gain.gain.setValueAtTime(0.035, now + idx * 0.03);
         gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35 + idx * 0.03);
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        connectToOutput(ctx, gain, pan);
         osc.start(now + idx * 0.03);
         osc.stop(now + 0.45);
       });
@@ -331,7 +441,7 @@ export function playChime() {
     gain.gain.setValueAtTime(0.05, now);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    connectToOutput(ctx, gain, pan);
     osc.start(now);
     osc.stop(now + 0.28);
   } catch {}

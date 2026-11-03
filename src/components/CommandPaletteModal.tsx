@@ -44,6 +44,7 @@ interface CommandPaletteModalProps {
   onToggleMute: () => void;
   soundTheme?: SoundTheme;
   onSelectSoundTheme?: (theme: SoundTheme) => void;
+  onOpenSoundSettings?: () => void;
   onSelectCategory: (category: AppCategory) => void;
   onOpenManifesto: () => void;
   onOpenChangelog: () => void;
@@ -97,6 +98,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   onToggleMute,
   soundTheme = 'relay',
   onSelectSoundTheme,
+  onOpenSoundSettings,
   onSelectCategory,
   onOpenManifesto,
   onOpenChangelog,
@@ -190,6 +192,21 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         onClose();
       },
     });
+
+    if (onOpenSoundSettings) {
+      list.push({
+        id: 'cmd-sound-settings',
+        title: 'Ljud- och haptikinställningar',
+        subtitle: 'Justera mastervolym, hårdvaruprofil, spatial stereo & haptik',
+        group: 'commands',
+        icon: <Sliders className="w-4 h-4 text-emerald-500 shrink-0" />,
+        onRun: () => {
+          playTabClick();
+          onOpenSoundSettings();
+          onClose();
+        },
+      });
+    }
 
     // Sound Synthesizer Profiles
     SOUND_THEMES.forEach((themeItem) => {
