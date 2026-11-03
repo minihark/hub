@@ -1,5 +1,5 @@
 import React from 'react';
-import { Volume2, VolumeX, BookOpen, Search, Radio, Rss, Sun, Moon, Code2, WifiOff, Download, Sliders } from 'lucide-react';
+import { Volume2, VolumeX, BookOpen, Search, Radio, Rss, Sun, Moon, Code2, WifiOff, Download, Sliders, MessageSquarePlus } from 'lucide-react';
 import { playTabClick, playChime, SoundTheme, SOUND_THEMES } from '../utils/audio';
 
 interface NavbarProps {
@@ -13,6 +13,7 @@ interface NavbarProps {
   onOpenManifesto: () => void;
   onOpenChangelog: () => void;
   onOpenWidget: () => void;
+  onOpenFeedback?: () => void;
   onOpenCommandPalette: () => void;
   onOpenTelemetry?: () => void;
   searchQuery: string;
@@ -36,6 +37,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenManifesto,
   onOpenChangelog,
   onOpenWidget,
+  onOpenFeedback,
   onOpenCommandPalette,
   onOpenTelemetry,
   searchQuery,
@@ -200,6 +202,22 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Code2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             <span className="hidden md:inline">Widget</span>
           </button>
+
+          {/* Feedback Button */}
+          {onOpenFeedback && (
+            <button
+              type="button"
+              onClick={() => {
+                playChime();
+                onOpenFeedback();
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 transition font-medium"
+              title="Lämna feedback eller förslag direkt till ateljén"
+            >
+              <MessageSquarePlus className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span className="hidden lg:inline">Feedback</span>
+            </button>
+          )}
 
           {/* Theme Toggle (Paper / Dark) */}
           <button

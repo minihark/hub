@@ -12,6 +12,7 @@ import { WidgetEmbedModal } from './components/WidgetEmbedModal';
 import { CommandPaletteModal } from './components/CommandPaletteModal';
 import { TelemetryDrawer } from './components/TelemetryDrawer';
 import { SoundSettingsModal } from './components/SoundSettingsModal';
+import { FeedbackDrawer } from './components/FeedbackDrawer';
 import { Footer } from './components/Footer';
 import { setAudioMuted, playTabClick, playLaunchClick, playDismissClick, playChime, SoundTheme, SOUND_THEMES, getSoundTheme, setSoundTheme, previewSoundTheme } from './utils/audio';
 import { Search, WifiOff } from 'lucide-react';
@@ -32,6 +33,8 @@ export const App: React.FC = () => {
   const [isWidgetOpen, setIsWidgetOpen] = useState(false);
   const [isTelemetryOpen, setIsTelemetryOpen] = useState(false);
   const [isSoundSettingsOpen, setIsSoundSettingsOpen] = useState(false);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+  const [feedbackAppId, setFeedbackAppId] = useState<string>('hub');
   const [fleetData, setFleetData] = useState<FleetResponse | null>(null);
   const [isOffline, setIsOffline] = useState(() => typeof navigator !== 'undefined' ? !navigator.onLine : false);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
@@ -277,13 +280,14 @@ export const App: React.FC = () => {
           playDismissClick();
           return;
         }
-        if (isManifestoOpen || isChangelogOpen || isWidgetOpen || isTelemetryOpen || isSoundSettingsOpen) {
+        if (isManifestoOpen || isChangelogOpen || isWidgetOpen || isTelemetryOpen || isSoundSettingsOpen || isFeedbackOpen) {
           e.preventDefault();
           setIsManifestoOpen(false);
           setIsChangelogOpen(false);
           setIsWidgetOpen(false);
           setIsTelemetryOpen(false);
           setIsSoundSettingsOpen(false);
+          setIsFeedbackOpen(false);
           playDismissClick();
           return;
         }
@@ -308,7 +312,7 @@ export const App: React.FC = () => {
         return;
       }
 
-      if (e.key === '/' && !isInput && !isCommandPaletteOpen && !isManifestoOpen && !isChangelogOpen && !isWidgetOpen && !isTelemetryOpen && !isSoundSettingsOpen) {
+      if (e.key === '/' && !isInput && !isCommandPaletteOpen && !isManifestoOpen && !isChangelogOpen && !isWidgetOpen && !isTelemetryOpen && !isSoundSettingsOpen && !isFeedbackOpen) {
         e.preventDefault();
         setIsCommandPaletteOpen(true);
         playTabClick();
@@ -316,7 +320,7 @@ export const App: React.FC = () => {
       }
 
       // The following shortcuts only activate when not typing in an input and no drawer/modal is open
-      if (isInput || isCommandPaletteOpen || isManifestoOpen || isChangelogOpen || isWidgetOpen || isTelemetryOpen || isSoundSettingsOpen) {
+      if (isInput || isCommandPaletteOpen || isManifestoOpen || isChangelogOpen || isWidgetOpen || isTelemetryOpen || isSoundSettingsOpen || isFeedbackOpen) {
         return;
       }
 
@@ -367,6 +371,15 @@ export const App: React.FC = () => {
         playChime();
         return;
       }
+
+      // 'f' or 'F' to toggle feedback drawer
+      if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        setFeedbackAppId('hub');
+        setIsFeedbackOpen((prev) => !prev);
+        playChime();
+        return;
+      }
     }
 
     window.addEventListener('keydown', handleKeyDown);
@@ -380,6 +393,7 @@ export const App: React.FC = () => {
     isWidgetOpen,
     isTelemetryOpen,
     isSoundSettingsOpen,
+    isFeedbackOpen,
     searchQuery,
     selectedCategory,
     isMuted,
@@ -415,6 +429,10 @@ export const App: React.FC = () => {
         onOpenWidget={() => setIsWidgetOpen(true)}
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         onOpenTelemetry={() => setIsTelemetryOpen(true)}
+        onOpenFeedback={() => {
+          setFeedbackAppId('hub');
+          setIsFeedbackOpen(true);
+        }}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         fleetStatus={fleetData?.fleet_status || 'all_operational'}
@@ -483,6 +501,10 @@ export const App: React.FC = () => {
                 shortcutNumber={index < 9 ? index + 1 : undefined}
                 isFavorite={favoriteIds.includes(app.id)}
                 onToggleFavorite={handleToggleFavorite}
+                onOpenFeedback={(appId) => {
+                  setFeedbackAppId(appId);
+                  setIsFeedbackOpen(true);
+                }}
               />
             ))}
           </div>
@@ -534,6 +556,10 @@ export const App: React.FC = () => {
         onOpenChangelog={() => setIsChangelogOpen(true)}
         onOpenWidget={() => setIsWidgetOpen(true)}
         onOpenTelemetry={() => setIsTelemetryOpen(true)}
+        onOpenFeedback={() => {
+          setFeedbackAppId('hub');
+          setIsFeedbackOpen(true);
+        }}
         canInstall={!!installPrompt}
         onInstallApp={handleInstallApp}
         favoriteIds={favoriteIds}
@@ -574,6 +600,15 @@ export const App: React.FC = () => {
       <WidgetEmbedModal
         isOpen={isWidgetOpen}
         onClose={() => setIsWidgetOpen(false)}
+      />
+
+      {/* 1-Tap Feedback & Bug Drawer */}
+      <FeedbackDrawer
+        isOpen={isFeedbackOpen}
+        onClose={() => setIsFeedbackOpen(false)}
+        apps={HARKCO_APPS}
+        theme={theme}
+        initialAppId={feedbackAppId}
       />
 
       {/* Desktop Quick Shortcuts Bar */}
@@ -620,6 +655,11 @@ export const App: React.FC = () => {
           </span>
           <span className="text-[#D1D5DB] dark:text-zinc-700">•</span>
           <span className="flex items-center gap-1">
+            <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-[#111726] border border-[#DDD7CD] dark:border-[#263550] text-[#111827] dark:text-zinc-200 font-semibold text-[10px] shadow-2xs">F</kbd>
+            <span className="ml-0.5">Feedback</span>
+          </span>
+          <span className="text-[#D1D5DB] dark:text-zinc-700">•</span>
+          <span className="flex items-center gap-1">
             <kbd className="px-1.5 py-0.5 rounded bg-white dark:bg-[#111726] border border-[#DDD7CD] dark:border-[#263550] text-[#111827] dark:text-zinc-200 font-semibold text-[10px] shadow-2xs">Esc</kbd>
             <span className="ml-0.5">Stäng / Rensa</span>
           </span>
@@ -631,7 +671,13 @@ export const App: React.FC = () => {
       </aside>
 
       {/* Footer */}
-      <Footer onOpenWidget={() => setIsWidgetOpen(true)} />
+      <Footer 
+        onOpenWidget={() => setIsWidgetOpen(true)} 
+        onOpenFeedback={() => {
+          setFeedbackAppId('hub');
+          setIsFeedbackOpen(true);
+        }}
+      />
 
     </div>
   );

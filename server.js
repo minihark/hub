@@ -14,6 +14,38 @@ const __dirname = path.dirname(__filename);
 const PORT = Number(process.env.PORT) || 80;
 const VAKT_API_URL = process.env.VAKT_API_URL || 'https://vakt.apps.harkco.se/api/monitors';
 const VAKT_INCIDENTS_URL = process.env.VAKT_INCIDENTS_URL || 'https://vakt.apps.harkco.se/api/incidents';
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8917459869:AAHkiYclgnCJoOjBJ2n65bTOGICcnSpwG3o';
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '7684080020';
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function parseJsonBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    req.on('data', (chunk) => {
+      body += chunk;
+      if (body.length > 50000) {
+        reject(new Error('Payload too large'));
+      }
+    });
+    req.on('end', () => {
+      try {
+        resolve(JSON.parse(body || '{}'));
+      } catch (err) {
+        reject(err);
+      }
+    });
+    req.on('error', reject);
+  });
+}
 
 // In-memory PNG cache: key -> { buffer, timestamp }
 const pngCache = new Map();
@@ -186,6 +218,85 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'HEAD') return res.end();
     res.end(JSON.stringify(cachedFleet.incidents || []));
     return;
+  }
+
+  // POST /api/feedback
+  if (req.method === 'POST' && pathname === '/api/feedback') {
+    try {
+      const data = await parseJsonBody(req);
+      const { type = 'idea', appId = 'hub', appName = 'Harkco Hub', message = '', contact = '', clientInfo = {} } = data;
+
+      if (!message || typeof message !== 'string' || message.trim().length === 0) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Meddelandet kan inte vara tomt.' }));
+        return;
+      }
+
+      const cleanMessage = message.trim().slice(0, 2000);
+      const cleanContact = (contact || '').trim().slice(0, 150);
+      const timestamp = new Date().toLocaleString('sv-SE', {
+        timeZone: 'Europe/Stockholm',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      const typeLabels = {
+        idea: '💡 Förslag / Idé',
+        bug: '🐛 Buggrapport',
+        praise: '⭐ Beröm & Tankar',
+      };
+      const typeText = typeLabels[type] || '💬 Feedback';
+
+      // Format Telegram message
+      const escapedApp = escapeHtml(appName || appId);
+      const escapedType = escapeHtml(typeText);
+      const escapedContact = cleanContact ? escapeHtml(cleanContact) : '<i>Anonym besökare</i>';
+      const escapedMsg = escapeHtml(cleanMessage);
+      const clientStr = escapeHtml(`${clientInfo.theme || 'auto'} • ${clientInfo.screenWidth ? `${clientInfo.screenWidth}px` : 'web'}`);
+
+      const tgText = 
+        `📬 <b>[HARKCO ATELJÉ FEEDBACK]</b>\n\n` +
+        `🏷️ <b>Kategori:</b> ${escapedType}\n` +
+        `📱 <b>App:</b> <b>${escapedApp}</b>\n` +
+        `👤 <b>Avsändare:</b> ${escapedContact}\n\n` +
+        `💬 <b>Meddelande:</b>\n<blockquote>${escapedMsg}</blockquote>\n\n` +
+        `🖥️ <b>Klient:</b> <code>${clientStr}</code>\n` +
+        `⏱️ <b>Tid:</b> <code>${timestamp}</code>`;
+
+      let delivered = false;
+      if (TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID) {
+        try {
+          const tgRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: TELEGRAM_CHAT_ID,
+              text: tgText,
+              parse_mode: 'HTML',
+            }),
+            signal: AbortSignal.timeout(5000),
+          });
+          delivered = tgRes.ok;
+        } catch (tgErr) {
+          console.error('[Feedback] Failed to send Telegram message:', tgErr.message);
+        }
+      }
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        status: 'ok',
+        delivered,
+        message: 'Tack för dina tankar! Meddelandet har levererats direkt till ateljén.',
+      }));
+      return;
+    } catch (err) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: err.message || 'Internt serverfel vid sändning.' }));
+      return;
+    }
   }
 
   // GET or HEAD /sw.js (PWA Service Worker)

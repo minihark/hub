@@ -16,7 +16,8 @@ import {
   Layers, 
   Archive,
   Share2,
-  Star
+  Star,
+  MessageSquarePlus
 } from 'lucide-react';
 import { playLaunchClick, playChime } from '../utils/audio';
 
@@ -32,6 +33,7 @@ interface AppCardProps {
   shortcutNumber?: number;
   isFavorite?: boolean;
   onToggleFavorite?: (appId: string) => void;
+  onOpenFeedback?: (appId: string) => void;
   index?: number;
 }
 
@@ -56,6 +58,7 @@ export const AppCard: React.FC<AppCardProps> = ({
   shortcutNumber,
   isFavorite = false,
   onToggleFavorite,
+  onOpenFeedback,
   index = 0,
 }) => {
   const [copied, setCopied] = useState(false);
@@ -181,6 +184,21 @@ export const AppCard: React.FC<AppCardProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* 1-Tap Feedback Button */}
+          {onOpenFeedback && (
+            <button
+              type="button"
+              onClick={() => {
+                playChime(pan);
+                onOpenFeedback(app.id);
+              }}
+              className="p-2 rounded-lg bg-[#F8F7F4] dark:bg-[#0A0E17] hover:bg-[#EFECE6] dark:hover:bg-[#182035] border border-[#E5E0D8] dark:border-[#1E2840] text-zinc-600 dark:text-zinc-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition"
+              title={`Lämna idé eller buggrapport för ${app.name}`}
+            >
+              <MessageSquarePlus className="w-3.5 h-3.5" />
+            </button>
+          )}
+
           {/* 1-Click Share Button */}
           <button
             type="button"

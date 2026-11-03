@@ -28,7 +28,8 @@ import {
   Layers,
   Archive,
   Star,
-  Sliders
+  Sliders,
+  MessageSquarePlus
 } from 'lucide-react';
 import { HarkcoApp, MonitorTelemetry, AppCategory } from '../types';
 import { playTabClick, playLaunchClick, playDismissClick, playChime, SoundTheme, SOUND_THEMES, setSoundTheme, previewSoundTheme } from '../utils/audio';
@@ -50,6 +51,7 @@ interface CommandPaletteModalProps {
   onOpenChangelog: () => void;
   onOpenWidget: () => void;
   onOpenTelemetry?: () => void;
+  onOpenFeedback?: () => void;
   onInstallApp?: () => void;
   canInstall?: boolean;
   favoriteIds?: string[];
@@ -104,6 +106,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   onOpenChangelog,
   onOpenWidget,
   onOpenTelemetry,
+  onOpenFeedback,
   onInstallApp,
   canInstall,
   favoriteIds = [],
@@ -279,6 +282,22 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
         onRun: () => {
           playChime();
           onOpenTelemetry();
+          onClose();
+        },
+      });
+    }
+
+    if (onOpenFeedback) {
+      list.push({
+        id: 'cmd-feedback',
+        title: 'Lämna feedback, idé eller buggrapport',
+        subtitle: 'Skicka idéer eller felrapporter direkt till Viktor i realtid',
+        group: 'commands',
+        icon: <MessageSquarePlus className="w-4 h-4 text-emerald-500 shrink-0" />,
+        shortcutHint: 'F',
+        onRun: () => {
+          playChime();
+          onOpenFeedback();
           onClose();
         },
       });

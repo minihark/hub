@@ -1,5 +1,5 @@
 import React from 'react';
-import { Radio, ExternalLink, Rss, Code2 } from 'lucide-react';
+import { Radio, ExternalLink, Rss, Code2, MessageSquarePlus } from 'lucide-react';
 import { playTabClick } from '../utils/audio';
 
 const GithubIcon: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.5' }) => (
@@ -10,9 +10,10 @@ const GithubIcon: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.5
 
 interface FooterProps {
   onOpenWidget?: () => void;
+  onOpenFeedback?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onOpenWidget }) => {
+export const Footer: React.FC<FooterProps> = ({ onOpenWidget, onOpenFeedback }) => {
   return (
     <footer className="border-t border-[#E5E0D8] dark:border-[#1E2840] bg-[#F0ECE4] dark:bg-[#0A0E17] py-10 px-4 sm:px-6 text-xs text-zinc-600 dark:text-zinc-500 font-mono mt-16 transition-colors">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
@@ -70,6 +71,21 @@ export const Footer: React.FC<FooterProps> = ({ onOpenWidget }) => {
             >
               <Code2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               <span>Widget & Embeds</span>
+            </button>
+          )}
+
+          {onOpenFeedback && (
+            <button
+              type="button"
+              onClick={() => {
+                playTabClick();
+                onOpenFeedback();
+              }}
+              className="hover:text-emerald-600 dark:hover:text-emerald-400 transition flex items-center gap-1 text-emerald-700 dark:text-emerald-300 font-medium text-left cursor-pointer"
+              title="Lämna feedback eller föreslå en idé"
+            >
+              <MessageSquarePlus className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>Feedback</span>
             </button>
           )}
 
