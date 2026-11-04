@@ -14,6 +14,7 @@ import { TelemetryDrawer } from './components/TelemetryDrawer';
 import { SoundSettingsModal } from './components/SoundSettingsModal';
 import { FeedbackDrawer } from './components/FeedbackDrawer';
 import { Footer } from './components/Footer';
+import { ThumbDock } from './components/ThumbDock';
 import { setAudioMuted, playTabClick, playLaunchClick, playDismissClick, playChime, SoundTheme, SOUND_THEMES, getSoundTheme, setSoundTheme, previewSoundTheme } from './utils/audio';
 import { useSwipeCategory } from './utils/useSwipeCategory';
 import { Search, WifiOff } from 'lucide-react';
@@ -476,6 +477,16 @@ export const App: React.FC = () => {
     soundTheme,
   ]);
 
+  // Modal / drawer overlay status
+  const anyOverlayOpen =
+    isCommandPaletteOpen ||
+    isManifestoOpen ||
+    isChangelogOpen ||
+    isWidgetOpen ||
+    isTelemetryOpen ||
+    isSoundSettingsOpen ||
+    isFeedbackOpen;
+
   // Mobile 1-thumb category swipe gesture navigation
   const appGridRef = useRef<HTMLDivElement>(null);
   const { slideDirection } = useSwipeCategory({
@@ -483,14 +494,7 @@ export const App: React.FC = () => {
     selectedCategory,
     onSelectCategory: setSelectedCategory,
     containerRef: appGridRef,
-    enabled:
-      !isCommandPaletteOpen &&
-      !isManifestoOpen &&
-      !isChangelogOpen &&
-      !isWidgetOpen &&
-      !isTelemetryOpen &&
-      !isSoundSettingsOpen &&
-      !isFeedbackOpen,
+    enabled: !anyOverlayOpen,
   });
 
   return (
@@ -536,7 +540,7 @@ export const App: React.FC = () => {
       />
 
       {/* Main Workspace */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-[calc(env(safe-area-inset-bottom)+88px)] sm:pb-8 space-y-8">
         
         {/* Studio Hero */}
         <Hero
@@ -787,6 +791,21 @@ export const App: React.FC = () => {
           setFeedbackAppId('hub');
           setIsFeedbackOpen(true);
         }}
+      />
+
+      {/* Floating Studio Thumb Dock (Mobile-Only 1-Thumb Nav) */}
+      <ThumbDock
+        hidden={anyOverlayOpen}
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
+        onOpenSearch={() => setIsCommandPaletteOpen(true)}
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+        favoritesCount={favoriteIds.length}
+        onOpenTelemetry={() => setIsTelemetryOpen(true)}
+        fleetStatus={fleetData?.fleet_status || 'all_operational'}
+        operationalCount={operationalCount}
+        totalCount={HARKCO_APPS.length}
       />
 
     </div>
