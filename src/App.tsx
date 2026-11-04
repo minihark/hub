@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { HARKCO_APPS } from './data/apps';
 import { AppCategory, MonitorTelemetry, FleetResponse, HarkcoApp } from './types';
 import { Navbar } from './components/Navbar';
@@ -15,6 +15,7 @@ import { SoundSettingsModal } from './components/SoundSettingsModal';
 import { FeedbackDrawer } from './components/FeedbackDrawer';
 import { Footer } from './components/Footer';
 import { setAudioMuted, playTabClick, playLaunchClick, playDismissClick, playChime, SoundTheme, SOUND_THEMES, getSoundTheme, setSoundTheme, previewSoundTheme } from './utils/audio';
+import { useSwipeCategory } from './utils/useSwipeCategory';
 import { Search, WifiOff } from 'lucide-react';
 
 export const App: React.FC = () => {
@@ -475,6 +476,23 @@ export const App: React.FC = () => {
     soundTheme,
   ]);
 
+  // Mobile 1-thumb category swipe gesture navigation
+  const appGridRef = useRef<HTMLDivElement>(null);
+  const { slideDirection } = useSwipeCategory({
+    activeCategories,
+    selectedCategory,
+    onSelectCategory: setSelectedCategory,
+    containerRef: appGridRef,
+    enabled:
+      !isCommandPaletteOpen &&
+      !isManifestoOpen &&
+      !isChangelogOpen &&
+      !isWidgetOpen &&
+      !isTelemetryOpen &&
+      !isSoundSettingsOpen &&
+      !isFeedbackOpen,
+  });
+
   return (
     <div className="min-h-screen flex flex-col bg-[#F8F7F4] dark:bg-[#0A0E17] text-[#111827] dark:text-[#F1F5F9] font-sans selection:bg-[#10B981] selection:text-black transition-colors duration-200">
       
@@ -563,49 +581,60 @@ export const App: React.FC = () => {
           counts={categoryCounts}
         />
 
-        {/* Grid of Apps */}
-        {filteredApps.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredApps.map((app, index) => (
-              <AppCard
-                key={app.id}
-                app={app}
-                index={index}
-                telemetry={telemetryMap[app.id]}
-                shortcutNumber={index < 9 ? index + 1 : undefined}
-                isFavorite={favoriteIds.includes(app.id)}
-                onToggleFavorite={handleToggleFavorite}
-                onOpenFeedback={(appId) => {
-                  setFeedbackAppId(appId);
-                  setIsFeedbackOpen(true);
+        {/* Swipeable Grid of Apps & Empty State */}
+        <div
+          ref={appGridRef}
+          className={`min-h-[300px] ${
+            slideDirection === 'left'
+              ? 'carousel-shuffle-left'
+              : slideDirection === 'right'
+              ? 'carousel-shuffle-right'
+              : ''
+          }`}
+        >
+          {filteredApps.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredApps.map((app, index) => (
+                <AppCard
+                  key={app.id}
+                  app={app}
+                  index={index}
+                  telemetry={telemetryMap[app.id]}
+                  shortcutNumber={index < 9 ? index + 1 : undefined}
+                  isFavorite={favoriteIds.includes(app.id)}
+                  onToggleFavorite={handleToggleFavorite}
+                  onOpenFeedback={(appId) => {
+                    setFeedbackAppId(appId);
+                    setIsFeedbackOpen(true);
+                  }}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="py-16 text-center space-y-4 max-w-md mx-auto">
+              <div className="w-12 h-12 rounded-xl bg-white dark:bg-[#111726] border border-[#E5E0D8] dark:border-[#1E2840] flex items-center justify-center text-zinc-400 dark:text-zinc-500 mx-auto">
+                <Search className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-[#111827] dark:text-white font-serif">Inga appar matchade</h3>
+                <p className="text-xs text-[#4B5563] dark:text-zinc-400 font-mono mt-1">
+                  Inga resultat för "{searchQuery}". Prova ett annat sökord eller nollställ filtret.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  playTabClick();
+                  setSearchQuery('');
+                  setSelectedCategory('all');
                 }}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="py-16 text-center space-y-4 max-w-md mx-auto">
-            <div className="w-12 h-12 rounded-xl bg-white dark:bg-[#111726] border border-[#E5E0D8] dark:border-[#1E2840] flex items-center justify-center text-zinc-400 dark:text-zinc-500 mx-auto">
-              <Search className="w-6 h-6" />
+                className="px-4 py-2 rounded-lg bg-[#F3F0EA] dark:bg-[#182035] hover:bg-[#E5E0D8] dark:hover:bg-[#202B48] border border-[#E5E0D8] dark:border-[#2E3D60] text-xs font-mono text-[#111827] dark:text-zinc-200 transition"
+              >
+                Återställ sökning
+              </button>
             </div>
-            <div>
-              <h3 className="text-base font-bold text-[#111827] dark:text-white font-serif">Inga appar matchade</h3>
-              <p className="text-xs text-[#4B5563] dark:text-zinc-400 font-mono mt-1">
-                Inga resultat för "{searchQuery}". Prova ett annat sökord eller nollställ filtret.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                playTabClick();
-                setSearchQuery('');
-                setSelectedCategory('all');
-              }}
-              className="px-4 py-2 rounded-lg bg-[#F3F0EA] dark:bg-[#182035] hover:bg-[#E5E0D8] dark:hover:bg-[#202B48] border border-[#E5E0D8] dark:border-[#2E3D60] text-xs font-mono text-[#111827] dark:text-zinc-200 transition"
-            >
-              Återställ sökning
-            </button>
-          </div>
-        )}
+          )}
+        </div>
 
       </main>
 

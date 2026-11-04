@@ -40,3 +40,42 @@ html.paper ::-webkit-scrollbar-thumb {
 html.paper ::-webkit-scrollbar-thumb:hover {
   background: #B5AB99;
 }
+
+/* Mobile Carousel Tile Shuffle Keyframes */
+@keyframes shuffleInRight {
+  from {
+    opacity: 0.55;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes shuffleInLeft {
+  from {
+    opacity: 0.55;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.carousel-shuffle-left {
+  animation: shuffleInRight 190ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.carousel-shuffle-right {
+  animation: shuffleInLeft 190ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carousel-shuffle-left,
+  .carousel-shuffle-right {
+    animation: none !important;
+    transform: none !important;
+  }
+}
